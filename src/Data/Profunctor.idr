@@ -163,10 +163,11 @@ instance Applicative f => Choice (UpStarred f) where
 
 -- #YOLO
 instance Traversable w => Choice (DownStarred w) where
-  left' (DownStar wab) = DownStar ( either           Right Left
-                                  . map wab
-                                  . traverse (either Right Left)
-                                  )
+  left'  (DownStar wab) = DownStar ( either           Right Left
+                                   . map wab
+                                   . traverse (either Right Left)
+                                   )
+  right' (DownStar wab) = DownStar (map wab . sequence)
 
 instance Monoid r => Choice (Forgotten r) where
   left'  (Forget k) = Forget (either k               (const neutral))
