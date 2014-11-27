@@ -4,6 +4,11 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 
+infixr 0 :->
+
+(:->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type -> Type -> Type
+(:->) p q a b = p a b -> q a b
+
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
 class Profunctor (p : Type -> Type -> Type) where
