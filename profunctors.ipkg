@@ -1,0 +1,7 @@
+package profunctors
+
+sourcedir = src
+
+modules = Data.Profunctor
+        , Data.Profunctor.Cayley
+        , Data.Profunctor.Monad
