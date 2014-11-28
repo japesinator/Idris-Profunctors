@@ -5,3 +5,4 @@ sourcedir = src
 modules = Data.Profunctor
         , Data.Profunctor.Cayley
         , Data.Profunctor.Monad
+        , Data.Verified.Profunctor
