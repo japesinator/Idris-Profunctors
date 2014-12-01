@@ -3,6 +3,7 @@ package profunctors
 sourcedir = src
 
 modules = Data.Profunctor
+        , Data.Profunctor.Adjunction
         , Data.Profunctor.Cayley
         , Data.Profunctor.Monad
         , Data.Verified.Profunctor

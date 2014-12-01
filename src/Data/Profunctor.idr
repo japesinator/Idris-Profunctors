@@ -4,10 +4,11 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 
-infixr 0 :->
+-- To re-add once I figure our existential type stuff
+-- infixr 0 :->
 
-(:->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type -> Type -> Type
-(:->) p q a b = p a b -> q a b
+-- (:->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type -> Type -> Type
+-- (:->) p q a b = p a b -> q a b
 
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
