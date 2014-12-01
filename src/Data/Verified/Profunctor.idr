@@ -2,6 +2,8 @@ module Data.Verified.Profunctor
 
 import Data.Profunctor
 
+||| Verified Profunctors
+||| A Profunctor for which identity and composition laws are verified
 class Profunctor p => VerifiedProfunctor (p : Type -> Type -> Type) where
   profunctorIdentity : {a : Type} -> {b : Type} -> (x : p a b) ->
                        dimap id id x = x
