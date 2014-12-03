@@ -3,6 +3,7 @@ module Data.Profunctor.Cayley
 import Data.Profunctor
 import Data.Profunctor.Monad
 
+||| Converts Monads on standard types to Monads on Profunctors
 record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
                                      Type -> Type -> Type where
   Cayley : (runCayley : f (p a b)) -> Cayleyed f p a b
