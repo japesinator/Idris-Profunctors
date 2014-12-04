@@ -3,6 +3,7 @@ module Data.Profunctor.Adjunction
 import Data.Profunctor
 import Data.Profunctor.Monad
 
+||| The equivalent to adjoint regular Functors for ProfunctorFunctors
 -- I have no idea how to do functional dependencies in idris, but really, those
 -- should be here.
 class (ProfunctorFunctor f, ProfunctorFunctor u) =>
