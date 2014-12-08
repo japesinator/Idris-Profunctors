@@ -1,8 +1,6 @@
 module Data.Profunctor.Closed
 
 import Data.Profunctor
-import Data.Profunctor.Adjunction
-import Data.Profunctor.Monad
 
 class Profunctor p => Closed (p : Type -> Type -> Type) where
   closed : p a b -> p (x -> a) (x -> b)

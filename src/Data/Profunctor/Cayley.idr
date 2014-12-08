@@ -1,19 +1,11 @@
 module Data.Profunctor.Cayley
 
 import Data.Profunctor
-import Data.Profunctor.Monad
 
 ||| Converts Monads on standard types to Monads on Profunctors
 record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
                                      Type -> Type -> Type where
   Cayley : (runCayley : f (p a b)) -> Cayleyed f p a b
-
-instance Functor f => ProfunctorFunctor (Cayleyed f) where
-  promap f (Cayley p) = Cayley (map f p)
-
-instance (Functor f, Monad f) => ProfunctorMonad (Cayleyed f) where
-  proreturn          = Cayley . return
-  projoin (Cayley m) = Cayley $ m >>= runCayley
 
 instance (Functor f, Profunctor p) => Profunctor (Cayleyed f p) where
   dimap f g = Cayley . map (dimap f g) . runCayley
