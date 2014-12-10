@@ -32,3 +32,14 @@ instance Strong p => Strong (Closure p) where
 
 instance Profunctor p => Functor (Closure p a) where
   map = rmap
+
+record Environment : (Type -> Type -> Type) -> Type -> Type -> Type where
+  Environize : ((z -> y) -> b) -> p x y -> (a -> z -> x) -> Environment p a b
+
+instance Profunctor p => Profunctor (Environment p) where
+  dimap f g (Environize l m r) = Environize (g . l) m (r . f)
+  lmap  f   (Environize l m r) = Environize l       m (r . f)
+  rmap    g (Environize l m r) = Environize (g . l) m r
+
+instance ProfunctorFunctor Environment where
+  promap f _ _ (Environize l m r) = Environize l (f <-$-> m) r
