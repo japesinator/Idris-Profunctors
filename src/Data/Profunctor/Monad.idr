@@ -6,6 +6,10 @@ infixl 0 -/->
 (-/->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type
 p -/-> q = (a : Type) -> (b : Type) -> p a b -> q a b
 
+infixl 4 <-$->
+(<-$->) : {x : Type} -> {y : Type} -> (p -/-> q) -> (p x y) -> q x y
+(<-$->) {x} {y} f p = f x y p
+
 class ProfunctorFunctor (t : (Type -> Type -> Type) ->
                               Type -> Type -> Type) where
   promap : Profunctor p => p -/-> q -> (t p) -/-> (t q)

@@ -1,6 +1,7 @@
 module Data.Profunctor.Closed
 
 import Data.Profunctor
+import Data.Profunctor.Monad
 
 class Profunctor p => Closed (p : Type -> Type -> Type) where
   closed : p a b -> p (x -> a) (x -> b)
@@ -23,9 +24,11 @@ yon h s = (fst h s, snd h s)
 instance Profunctor p => Profunctor (Closure p) where
   dimap f g (Close p) = Close $ dimap ((.) f) ((.) g) p
 
+instance ProfunctorFunctor Closure where
+  promap f _ _ (Close p) = Close (f <-$-> p)
+
 instance Strong p => Strong (Closure p) where
-  first'  (Close p) = Close $ dimap hither yon $ first'  p
-  second' (Close p) = Close $ dimap hither yon $ second' p
+  first'  (Close p) = Close $ dimap hither yon $ first' p
 
 instance Profunctor p => Functor (Closure p a) where
   map = rmap
