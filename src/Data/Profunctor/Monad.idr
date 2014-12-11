@@ -7,8 +7,8 @@ infixl 0 -/->
 p -/-> q = (a : Type) -> (b : Type) -> p a b -> q a b
 
 infixl 4 <-$->
-(<-$->) : {x : Type} -> {y : Type} -> (p -/-> q) -> (p x y) -> q x y
-(<-$->) {x} {y} f p = f x y p
+(<-$->) : {a : Type} -> {b : Type} -> (p -/-> q) -> (p a b) -> q a b
+(<-$->) {a} {b} f p = f a b p
 
 class ProfunctorFunctor (t : (Type -> Type -> Type) ->
                               Type -> Type -> Type) where
