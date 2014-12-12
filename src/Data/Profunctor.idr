@@ -120,8 +120,8 @@ instance Traversable (Forgotten r a) where
 
 ||| Generalized UpStar of a Strong Functor
 class Profunctor p => Strong (p : Type -> Type -> Type) where
-  first' : p a b -> p (a, c) (b, c)
-  first' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . second'
+  first'  : p a b -> p (a, c) (b, c)
+  first'  = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . second'
 
   second' : p a b -> p (c, a) (c, b)
   second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
