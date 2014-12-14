@@ -10,5 +10,6 @@ modules = Data.Profunctor
         , Data.Profunctor.Monad
         , Data.Profunctor.Rep
         , Data.Profunctor.Trace
+        , Data.Profunctor.Tambara
         , Data.Verified.Profunctor
         , Data.Verified.ProfunctorFunctor
