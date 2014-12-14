@@ -17,6 +17,9 @@ mapFst   f           (a, b) =  (f a, b)
 instance Profunctor p => Profunctor (Tambarred {c} p) where
   dimap f g (Tambara p) = Tambara $ dimap (mapFst f) (mapFst g) p
 
+instance ProfunctorFunctor (Tambarred {c}) where
+  promap f _ _ (Tambara p) = Tambara $ f <-$-> p
+
 instance Category p => Category (Tambarred {c} p) where
   id                        = Tambara id
   (Tambara p) . (Tambara q) = Tambara (p . q)
@@ -33,9 +36,6 @@ instance Arrow p => Arrow (Tambarred {c} p) where
   second         f  = arrow swap >>> first f >>> arrow swap
   f      ***     g  = first f >>> second g
   f      &&&     g  = arrow (\b => (b,b)) >>> f *** g
-
-instance ProfunctorFunctor (Tambarred {c}) where
-  promap f _ _ (Tambara p) = Tambara $ f <-$-> p
 
 hither : (Either y z, s) -> Either (y, s) (z, s)
 hither   (Left   y,   s) =  Left   (y, s)
@@ -65,3 +65,38 @@ instance Profunctor p => Profunctor (Pastroyed p) where
 
 instance ProfunctorFunctor Pastroyed where
   promap f _ _ (Pastro l m r) = Pastro l (f <-$-> m) r
+
+data Cotambarred : {c : Type} -> (Type -> Type -> Type) ->
+                 Type -> Type -> Type where
+  Cotambara : p (Either a c) (Either b c) -> Cotambarred {c} p a b
+
+runCotambara : Cotambarred {c} p a b -> p (Either a c) (Either b c)
+runCotambara (Cotambara p) = p
+
+mapLeft : (a -> b) -> Either a c -> Either b     c
+mapLeft   f           (Left  a)   = Left   (f a)
+mapLeft   _           (Right   b) = Right        b
+
+instance Profunctor p => Profunctor (Cotambarred {c} p) where
+  dimap f g (Cotambara p) = Cotambara $ dimap (mapLeft f) (mapLeft g) p
+
+instance ProfunctorFunctor (Cotambarred {c}) where
+  promap f _ _ (Cotambara p) = Cotambara $ f <-$-> p
+
+instance Category p => Category (Cotambarred {c} p) where
+  id                            = Cotambara $ id
+  (Cotambara f) . (Cotambara g) = Cotambara   (f . g)
+
+instance Profunctor p => Functor (Cotambarred {c} p a) where
+  map = rmap
+
+data Copastroyed : (Type -> Type -> Type) -> Type -> Type -> Type where
+  Copastro : (Either y z -> b) -> p x y -> (a -> Either x z) -> Copastroyed p a b
+
+instance Profunctor p => Profunctor (Copastroyed p) where
+  dimap f g (Copastro l m r) = Copastro (g . l) m (r . f)
+  lmap  f   (Copastro l m r) = Copastro      l  m (r . f)
+  rmap    g (Copastro l m r) = Copastro (g . l) m  r
+
+instance ProfunctorFunctor Copastroyed where
+  promap f _ _ (Copastro l m r) = Copastro l (f <-$-> m) r
