@@ -1,6 +1,7 @@
 module Data.Profunctor.Tambara
 
 import Data.Profunctor
+import Data.Profunctor.Adjunction
 import Data.Profunctor.Monad
 
 data Tambarred : {c : Type} -> (Type -> Type -> Type) ->
@@ -53,3 +54,14 @@ instance Profunctor p => Functor (Tambarred {c} p a) where
 instance (Profunctor p, Arrow p) => Applicative (Tambarred {c} p a) where
   pure x  = arrow (const x)
   f <$> g = arrow (uncurry id) . (f &&& g)
+
+data Pastroyed : (Type -> Type -> Type) -> Type -> Type -> Type where
+  Pastro : ((y, z) -> b) -> p x y -> (a -> (x, z)) -> Pastroyed p a b
+
+instance Profunctor p => Profunctor (Pastroyed p) where
+  dimap f g (Pastro l m r) = Pastro (g . l) m (r . f)
+  lmap  f   (Pastro l m r) = Pastro      l  m (r . f)
+  rmap    g (Pastro l m r) = Pastro (g . l) m  r
+
+instance ProfunctorFunctor Pastroyed where
+  promap f _ _ (Pastro l m r) = Pastro l (f <-$-> m) r
