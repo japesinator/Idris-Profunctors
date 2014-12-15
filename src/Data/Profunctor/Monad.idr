@@ -23,3 +23,6 @@ class ProfunctorFunctor t => ProfunctorComonad (t : (Type -> Type -> Type) ->
                                                      Type -> Type -> Type) where
   proextract   : Profunctor p => (t p) -/->       p
   produplicate : Profunctor p => (t p) -/-> (t (t p))
+
+profunctorFunctorCompose : (p -/-> q) -> (q -/-> r) -> (p -/-> r)
+profunctorFunctorCompose f g _ _ = with Basics (.) ((<-$->) g) ((<-$->) f)
