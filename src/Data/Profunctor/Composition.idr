@@ -6,6 +6,7 @@ import Data.Profunctor.Closed
 import Data.Profunctor.Monad
 import Data.Profunctor.Rep
 
+||| The composition of two Profunctors
 data Procomposed : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
                    Type -> Type -> Type where
   Procompose : p x c -> q d x -> Procomposed p q d c
@@ -28,6 +29,7 @@ instance (Profunctor p, Profunctor q) => Profunctor (Procomposed p q) where
 instance Profunctor p => Functor (Procomposed p q a) where
   map k (Procompose f g) = Procompose (rmap k f) g
 
+||| The right Kan lift of one Profunctor along another
 record Rifted : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
                 Type -> Type -> Type where
   Rift : {x : Type} -> (runRift : p b x -> q a x) -> Rifted p q a b

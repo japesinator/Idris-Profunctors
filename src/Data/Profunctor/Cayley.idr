@@ -33,7 +33,7 @@ instance (Applicative f, Arrow p) => Arrow (Cayleyed f p) where
   (Cayley ab) &&& (Cayley ac) = Cayley $ liftA2 (&&&) ab ac
 
 instance Functor f => ProfunctorFunctor (Cayleyed f) where
-  promap f _ _ (Cayley p) = ?rhs --Cayley (map (\x => f <-$-> x) p)
+  promap f _ _ (Cayley p) = Cayley (map (\x => f <-$-> x) p)
 
 instance (Functor f, Monad f) => ProfunctorMonad (Cayleyed f) where
   proreturn _ _            = Cayley . return

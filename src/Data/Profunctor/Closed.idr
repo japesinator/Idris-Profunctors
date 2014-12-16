@@ -3,6 +3,7 @@ module Data.Profunctor.Closed
 import Data.Profunctor
 import Data.Profunctor.Monad
 
+||| A Closed Profunctor that allows the closed structure to pass through
 class Profunctor p => Closed (p : Type -> Type -> Type) where
   closed : p a b -> p (x -> a) (x -> b)
 
@@ -12,6 +13,7 @@ instance Functor f => Closed (DownStarred f) where
 instance Monoid r => Closed (Forgotten r) where
   closed _ = Forget $ \_ => neutral
 
+||| Closure adjoins a Closed structure to any Profunctor
 record Closure : (Type -> Type -> Type) -> Type -> Type -> Type where
   Close : (runClosure : p (x -> a) (x -> b)) -> Closure p a b
 
@@ -33,6 +35,7 @@ instance Strong p => Strong (Closure p) where
 instance Profunctor p => Functor (Closure p a) where
   map = rmap
 
+||| Environment is left adjoint to Closure
 data Environment : (Type -> Type -> Type) -> Type -> Type -> Type where
   Environize : ((z -> y) -> b) -> p x y -> (a -> z -> x) -> Environment p a b
 
