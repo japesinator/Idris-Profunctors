@@ -2,13 +2,13 @@ module Data.Profunctor.Monad
 
 import Data.Profunctor
 
-||| Analogous to (->) for types in idris, but requires explicit types
 infixl 0 -/->
+||| -/-> works for Profunctors like -> works for standard types
 (-/->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type
 p -/-> q = (a : Type) -> (b : Type) -> p a b -> q a b
 
-||| Applies a function of type (p -/-> q) to an object of type p * *
 infixl 4 <-$->
+||| Applies a function of type (p -/-> q) to an object of type p * *
 (<-$->) : {a : Type} -> {b : Type} -> (p -/-> q) -> (p a b) -> q a b
 (<-$->) {a} {b} f p = f a b p
 
