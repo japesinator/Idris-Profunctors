@@ -4,12 +4,6 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 
--- To re-add once I figure our existential type stuff
--- infixr 0 :->
-
--- (:->) : (Type -> Type -> Type) -> (Type -> Type -> Type) -> Type -> Type -> Type
--- (:->) p q a b = p a b -> q a b
-
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
 class Profunctor (p : Type -> Type -> Type) where
@@ -150,6 +144,7 @@ instance Strong (Forgotten r) where
 -- Choice
 -- {{{
 
+||| Generalized DownStar of a costrong Functor
 class Profunctor p => Choice (p : Type -> Type -> Type) where
   left' : p a b -> p (Either a c) (Either b c)
   left' = dimap (either Right Left) (either Right Left) . right'
