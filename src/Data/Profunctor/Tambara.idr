@@ -73,14 +73,13 @@ instance Profunctor p => Profunctor (Pastroyed p) where
 instance ProfunctorFunctor Pastroyed where
   promap f _ _ (Pastro l m r) = Pastro l (f <-$-> m) r
 
-||| Cotambara is the dual of Tambara
+||| Cotambara is Tambara for Choice instead of Strong
 data Cotambarred : {c : Type} -> (Type -> Type -> Type) ->
                  Type -> Type -> Type where
   Cotambara : p (Either a c) (Either b c) -> Cotambarred {c} p a b
 
 runCotambara : Cotambarred {c} p a b -> p (Either a c) (Either b c)
 runCotambara (Cotambara p) = p
-
 
 instance Profunctor p => Profunctor (Cotambarred {c} p) where
   dimap f g (Cotambara p) = Cotambara $ dimap (mapLeft f) (mapLeft g) p
@@ -99,7 +98,7 @@ instance Category p => Category (Cotambarred {c} p) where
 instance Profunctor p => Functor (Cotambarred {c} p a) where
   map = rmap
 
-||| Copastro is the dual of Pastro
+||| Copastro is left adjunct to Cotambara
 data Copastroyed : (Type -> Type -> Type) -> Type -> Type -> Type where
   Copastro : (Either y z -> b) -> p x y -> (a -> Either x z) -> Copastroyed p a b
 
