@@ -4,6 +4,7 @@ import Data.Profunctor
 import Data.Profunctor.Composition
 import Data.Profunctor.Monad
 
+||| The right Kan extension of a profunctor
 record Ran : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
              Type -> Type -> Type where
   Run : (runRan : p x a -> q x b) -> Ran p q a b
