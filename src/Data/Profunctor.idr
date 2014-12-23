@@ -8,14 +8,29 @@ import Data.Morphisms
 ||| @p The action of the Profunctor on pairs of objects
 class Profunctor (p : Type -> Type -> Type) where
   ||| Map over both arguments
+  |||
+  ||| ````idris example
+  ||| dimap reverse length (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   dimap : (a -> b) -> (c -> d) -> p b c -> p a d
   dimap f g = lmap f . rmap g
 
   ||| Map over the first argument contravariantly
+  |||
+  ||| ````idris example
+  ||| lmap reverse (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   lmap : (a -> b) -> p b c -> p a c
   lmap f = dimap f id
 
   ||| Map over the second argument covariantly
+  |||
+  ||| ````idris example
+  ||| rmap length (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   rmap : (a -> b) -> p c a -> p c b
   rmap = dimap id
 
@@ -26,6 +41,11 @@ instance Monad m => Profunctor (Kleislimorphism m) where
 -- {{{
 
 ||| Lift a Functor into a Profunctor going forwards
+|||
+||| ````idris example
+||| UpStar $ \x => Just $ isDigit x
+||| ````
+|||
 record UpStarred : (Type -> Type) -> (Type -> Type -> Type) where
   UpStar : (runUpStar : d -> f c) -> UpStarred f d c
 
@@ -49,6 +69,11 @@ instance Monad f => Monad (UpStarred f a) where
 -- {{{
 
 ||| Lift a Functor into a Profunctor going backwards
+|||
+||| ````idris example
+||| DownStar $ show
+||| ````
+|||
 record DownStarred : (Type -> Type) -> (Type -> Type -> Type) where
   DownStar : (runDownStar : f d -> c) -> DownStarred f d c
 
@@ -70,6 +95,11 @@ instance Monad (DownStarred f a) where
 -- {{{
 
 ||| Wrap an Arrow for use as a Profunctor
+|||
+||| ````idris example
+||| WrapArrow $ arrow ((+) 1)
+||| ````
+|||
 record WrappedArrow : (Type -> Type -> Type) -> Type -> Type -> Type where
   WrapArrow : (unwrapArrow : p a b) -> WrappedArrow p a b
 
@@ -93,6 +123,11 @@ instance Arrow p => Profunctor (WrappedArrow p) where
 -- {{{
 
 ||| Forget some information about a type
+|||
+||| ````idris example
+||| Forget ((+) 1)
+||| ````
+|||
 record Forgotten : Type -> Type -> Type -> Type where
   Forget : (runForget : a -> r) -> Forgotten r a b
 
