@@ -149,9 +149,21 @@ instance Traversable (Forgotten r a) where
 
 ||| Generalized UpStar of a Strong Functor
 class Profunctor p => Strong (p : Type -> Type -> Type) where
+  ||| Create a new Profunctor of tuples with first element from the original
+  |||
+  ||| ````idris example
+  ||| first' (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   first'  : p a b -> p (a, c) (b, c)
   first'  = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . second'
 
+  ||| Create a new Profunctor of tuples with second element from the original
+  |||
+  ||| ````idris example
+  ||| second' (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   second' : p a b -> p (c, a) (c, b)
   second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
 
@@ -179,11 +191,23 @@ instance Strong (Forgotten r) where
 -- Choice
 -- {{{
 
-||| Generalized DownStar of a costrong Functor
+||| Generalized DownStar of a Costrong Functor
 class Profunctor p => Choice (p : Type -> Type -> Type) where
+  ||| Like first' but with sum rather than product types
+  |||
+  ||| ````idris example
+  ||| left' (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   left' : p a b -> p (Either a c) (Either b c)
   left' = dimap (either Right Left) (either Right Left) . right'
 
+  ||| Like second' but with sum rather than product types
+  |||
+  ||| ````idris example
+  ||| right' (Kleisli $ \x => Just $ reverse x)
+  ||| ````
+  |||
   right' : p a b -> p (Either c a) (Either c b)
   right' = dimap (either Right Left) (either Right Left) . left'
 
