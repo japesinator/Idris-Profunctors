@@ -6,6 +6,9 @@ import Data.Profunctor.Monad
 ||| Converts Monads on standard types to Monads on Profunctors
 record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
                                      Type -> Type -> Type where
+  ||| ````idris example
+  ||| Cayley $ Just $ Kleisli $ \x => Just $ reverse x
+  ||| ````
   Cayley : (runCayley : f (p a b)) -> Cayleyed f p a b
 
 instance (Functor f, Profunctor p) => Profunctor (Cayleyed f p) where
