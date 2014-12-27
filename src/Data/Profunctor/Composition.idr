@@ -9,7 +9,9 @@ import Data.Profunctor.Rep
 ||| The composition of two Profunctors
 data Procomposed : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
                    Type -> Type -> Type where
-  Procompose : {c : Type} -> {d : Type} -> {x : Type} -> p x c -> q d x -> Procomposed p q d c
+  ||| Compose two Profunctors
+  Procompose : {c : Type} -> {d : Type} -> {x : Type} ->
+               p x c -> q d x -> Procomposed p q d c
 
 instance ProfunctorFunctor (Procomposed p) where
   promap f _ _ (Procompose p q) = Procompose p (f <-$-> q)
