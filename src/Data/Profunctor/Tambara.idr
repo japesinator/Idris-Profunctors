@@ -1,5 +1,7 @@
 module Data.Profunctor.Tambara
 
+import Control.Arrow
+import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Adjunction
 import Data.Profunctor.Monad

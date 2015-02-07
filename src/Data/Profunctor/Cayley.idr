@@ -1,5 +1,7 @@
 module Data.Profunctor.Cayley
 
+import Control.Arrow
+import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Monad
 
