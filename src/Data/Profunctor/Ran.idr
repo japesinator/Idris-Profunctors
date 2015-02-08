@@ -7,7 +7,7 @@ import Data.Profunctor.Monad
 ||| The right Kan extension of a profunctor
 record Ran : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
              Type -> Type -> Type where
-  Run : (runRan : p x a -> q x b) -> Ran p q a b
+  Run : {x : _} -> (runRan : p x a -> q x b) -> Ran p q a b
 
 instance ProfunctorFunctor (Ran p) where
   promap f _ _ (Run g) = Run $ (.) ((<-$->) f) g
