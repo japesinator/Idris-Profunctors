@@ -13,4 +13,3 @@ modules = Data.Profunctor
         , Data.Profunctor.Trace
         , Data.Profunctor.Tambara
         , Data.Verified.Profunctor
-        , Data.Verified.ProfunctorFunctor

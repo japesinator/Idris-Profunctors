@@ -61,7 +61,7 @@ instance Profunctor p => Functor (Tambarred {c} p a) where
 
 instance (Profunctor p, Arrow p) => Applicative (Tambarred {c} p a) where
   pure x  = arrow (const x)
-  f <$> g = arrow (uncurry id) . (f &&& g)
+  f <*> g = arrow (uncurry id) . (f &&& g)
 
 ||| Pastroyed is left adjunct to Tambarred
 data Pastroyed : (Type -> Type -> Type) -> Type -> Type -> Type where

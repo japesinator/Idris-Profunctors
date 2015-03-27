@@ -57,7 +57,7 @@ instance Functor f => Functor (UpStarred f a) where
 
 instance Applicative f => Applicative (UpStarred f a) where
   pure a                      = UpStar $ \_ => pure a
-  (UpStar ff) <$> (UpStar fx) = UpStar $ \a => ff a <$> fx a
+  (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
 instance Monad f => Monad (UpStarred f a) where
   (UpStar m) >>= f = UpStar $ \e => do
@@ -85,7 +85,7 @@ instance Functor (DownStarred f a) where
 
 instance Applicative (DownStarred f a) where
   pure a                          = DownStar $ \_ => a
-  (DownStar ff) <$> (DownStar fx) = DownStar $ \a => ff a (fx a)
+  (DownStar ff) <*> (DownStar fx) = DownStar $ \a => ff a (fx a)
 
 instance Monad (DownStarred f a) where
   (DownStar m) >>= f = DownStar $ \x => runDownStar (f (m x)) x
