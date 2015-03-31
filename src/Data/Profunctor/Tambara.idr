@@ -3,8 +3,6 @@ module Data.Profunctor.Tambara
 import Control.Arrow
 import Control.Category
 import Data.Profunctor
-import Data.Profunctor.Adjunction
-import Data.Profunctor.Monad
 
 ||| Tambara adjoins a Strong structure to any Profunctor
 data Tambarred : {c : Type} -> (Type -> Type -> Type) ->
@@ -21,9 +19,6 @@ instance Profunctor p => Profunctor (Tambarred {c} p) where
       --   confused about names
       mapFst : (a' -> b') -> (a', c') -> (b',    c')
       mapFst   f'            (a', b') =  (f' a', b')
-
-instance ProfunctorFunctor (Tambarred {c}) where
-  promap f _ _ (Tambara p) = Tambara $ f <-$-> p
 
 instance Category p => Category (Tambarred {c} p) where
   id                        = Tambara id
@@ -72,9 +67,6 @@ instance Profunctor p => Profunctor (Pastroyed p) where
   lmap  f   (Pastro l m r) = Pastro      l  m (r . f)
   rmap    g (Pastro l m r) = Pastro (g . l) m  r
 
-instance ProfunctorFunctor Pastroyed where
-  promap f _ _ (Pastro l m r) = Pastro l (f <-$-> m) r
-
 ||| Cotambara is Tambara for Choice instead of Strong
 data Cotambarred : {c : Type} -> (Type -> Type -> Type) ->
                  Type -> Type -> Type where
@@ -89,9 +81,6 @@ instance Profunctor p => Profunctor (Cotambarred {c} p) where
       mapLeft : (a' -> b') -> Either a' c' -> Either b'     c'
       mapLeft   f'            (Left  a')    = Left   (f' a')
       mapLeft   _             (Right    b') = Right         b'
-
-instance ProfunctorFunctor (Cotambarred {c}) where
-  promap f _ _ (Cotambara p) = Cotambara $ f <-$-> p
 
 instance Category p => Category (Cotambarred {c} p) where
   id                            = Cotambara $ id
@@ -108,6 +97,3 @@ instance Profunctor p => Profunctor (Copastroyed p) where
   dimap f g (Copastro l m r) = Copastro (g . l) m (r . f)
   lmap  f   (Copastro l m r) = Copastro      l  m (r . f)
   rmap    g (Copastro l m r) = Copastro (g . l) m  r
-
-instance ProfunctorFunctor Copastroyed where
-  promap f _ _ (Copastro l m r) = Copastro l (f <-$-> m) r

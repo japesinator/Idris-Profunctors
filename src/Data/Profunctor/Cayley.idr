@@ -3,7 +3,6 @@ module Data.Profunctor.Cayley
 import Control.Arrow
 import Control.Category
 import Data.Profunctor
-import Data.Profunctor.Monad
 
 ||| Converts Monads on standard types to Monads on Profunctors
 record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
@@ -51,10 +50,3 @@ instance (Applicative f, ArrowZero p) => ArrowZero (Cayleyed f p) where
 
 instance (Applicative f, ArrowPlus p) => ArrowPlus (Cayleyed f p) where
   (Cayley f) <++> (Cayley g) = Cayley (liftA2 (<++>) f g)
-
-instance Functor f => ProfunctorFunctor (Cayleyed f) where
-  promap f _ _ (Cayley p) = Cayley (map (\x => f <-$-> x) p)
-
-instance (Functor f, Monad f) => ProfunctorMonad (Cayleyed f) where
-  proreturn _ _            = Cayley . return
-  projoin   _ _ (Cayley m) = Cayley $ m >>= runCayley

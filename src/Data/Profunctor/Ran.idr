@@ -9,9 +9,6 @@ record Ran : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
              Type -> Type -> Type where
   Run : {x : _} -> (runRan : p x a -> q x b) -> Ran p q a b
 
-instance ProfunctorFunctor (Ran p) where
-  promap f _ _ (Run g) = Run $ (.) ((<-$->) f) g
-
 instance (Profunctor p, Profunctor q) => Profunctor (Ran p q) where
   dimap ca bd f = Run $ rmap bd . runRan f . rmap ca
   lmap  ca    f = Run $           runRan f . rmap ca

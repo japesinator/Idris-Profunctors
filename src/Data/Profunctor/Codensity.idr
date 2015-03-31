@@ -1,11 +1,12 @@
 module Data.Profunctor.Codensity
 
+import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Composition
 
 ||| The right Kan extenstion of a Profunctor
 record Codense : (Type -> Type -> Type) -> Type -> Type -> Type where
-  Codensity : (runCodensity : p x a -> p x b) -> Codense p a b
+  Codensity : {x : _} -> (runCodensity : p x a -> p x b) -> Codense p a b
 
 instance Profunctor p => Profunctor (Codense p) where
   dimap ca bd f = Codensity $ rmap bd . runCodensity f . rmap ca

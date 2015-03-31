@@ -3,12 +3,10 @@ package profunctors
 sourcedir = src
 
 modules = Data.Profunctor
-        , Data.Profunctor.Adjunction
         , Data.Profunctor.Cayley
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
-        , Data.Profunctor.Monad
         , Data.Profunctor.Rep
         , Data.Profunctor.Trace
         , Data.Profunctor.Tambara
