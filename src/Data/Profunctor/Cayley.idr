@@ -37,6 +37,21 @@ instance (Applicative f, Arrow p) => Arrow (Cayleyed f p) where
   (Cayley ab) *** (Cayley cd) = Cayley $ liftA2 (***) ab cd
   (Cayley ab) &&& (Cayley ac) = Cayley $ liftA2 (&&&) ab ac
 
+instance (Applicative f, ArrowChoice p) => ArrowChoice (Cayleyed f p) where
+  left                        = Cayley . map left . runCayley
+  right                       = Cayley . map right . runCayley
+  (Cayley ab) +++ (Cayley cd) = Cayley $ liftA2 (+++) ab cd
+  (Cayley ac) \|/ (Cayley bc) = Cayley $ liftA2 (\|/) ac bc
+
+instance (Applicative f, ArrowLoop p) => ArrowLoop (Cayleyed f p) where
+  loop = Cayley . map loop . runCayley
+
+instance (Applicative f, ArrowZero p) => ArrowZero (Cayleyed f p) where
+  zeroArrow = Cayley $ pure zeroArrow
+
+instance (Applicative f, ArrowPlus p) => ArrowPlus (Cayleyed f p) where
+  (Cayley f) <++> (Cayley g) = Cayley (liftA2 (<++>) f g)
+
 instance Functor f => ProfunctorFunctor (Cayleyed f) where
   promap f _ _ (Cayley p) = Cayley (map (\x => f <-$-> x) p)
 
