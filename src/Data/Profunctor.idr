@@ -37,18 +37,25 @@ class Profunctor (p : Type -> Type -> Type) where
 instance Monad m => Profunctor (Kleislimorphism m) where
   dimap f g (Kleisli h) = Kleisli $ liftA g . h . f
 
+||| An injective (->)
+|||
+||| ````idris example
+||| believe_me : Arr a b
+||| ````
+|||
 record Arr : Type -> Type -> Type where
   MkArr : (runArr : (a -> b)) -> Arr a b
 
 instance Profunctor Arr where
   dimap f g (MkArr h) = MkArr $ g . h . f
 
-record Reviewed : Type -> Type -> Type where
-  Review : (runReviewed : b) -> Reviewed a b
+||| A method of attaching a phantom type as a "tag"
+record Tagged : Type -> Type -> Type where
+  Tag : (runTagged : b) -> Tagged a b
 
-instance Profunctor Reviewed where
-  lmap _ (Review c) = Review c
-  rmap f (Review c) = Review $ f c
+instance Profunctor Tagged where
+  lmap _ (Tag c) = Tag c
+  rmap f (Tag c) = Tag $ f c
 
 -- UpStar
 -- {{{
@@ -238,23 +245,16 @@ instance Choice Arr where
   left'  (MkArr f) = MkArr $ either (Left . f) Right
   right' (MkArr f) = MkArr $ either Left (Right . f)
 
-instance Choice Reviewed where
-  left'  (Review b) = Review $ Left b
-  right' (Review b) = Review $ Right b
+instance Choice Tagged where
+  left'  (Tag b) = Tag $ Left b
+  right' (Tag b) = Tag $ Right b
 
 instance Applicative f => Choice (UpStarred f) where
   left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
   right' (UpStar f) = UpStar $ either (map Left . pure) (map Right . f   )
 
--- #YOLO
-instance Traversable w => Choice (DownStarred w) where
-  left'  (DownStar wab) = DownStar $ either           Right Left
-                                   . map wab
-                                   . traverse (either Right Left)
-  right' (DownStar wab) = DownStar $ map wab . sequence
-
 instance Monoid r => Choice (Forgotten r) where
-  left'  (Forget k) = Forget $ either k               (const neutral)
+  left'  (Forget k) = Forget $ either k (const neutral)
   right' (Forget k) = Forget $ either (const neutral) k
 
 -- }}}
