@@ -37,6 +37,19 @@ class Profunctor (p : Type -> Type -> Type) where
 instance Monad m => Profunctor (Kleislimorphism m) where
   dimap f g (Kleisli h) = Kleisli $ liftA g . h . f
 
+record Arr : Type -> Type -> Type where
+  MkArr : (runArr : (a -> b)) -> Arr a b
+
+instance Profunctor Arr where
+  dimap f g (MkArr h) = MkArr $ g . h . f
+
+record Reviewed : Type -> Type -> Type where
+  Review : (runReviewed : b) -> Reviewed a b
+
+instance Profunctor Reviewed where
+  lmap _ (Review c) = Review c
+  rmap f (Review c) = Review $ f c
+
 -- UpStar
 -- {{{
 
@@ -175,6 +188,10 @@ instance Monad m => Strong (Kleislimorphism m) where
     b <- f (snd ca)
     return (fst ca, b)
 
+instance Strong Arr where
+  first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
+  second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
+
 instance Functor m => Strong (UpStarred m) where
   first'  (UpStar f) = UpStar $ (\ac => map (\b' => (b', snd ac)) (f $ fst ac))
   second' (UpStar f) = UpStar $ (\ca => map (MkPair $   fst ca) (f $ snd ca))
@@ -216,6 +233,14 @@ instance Monad m => Choice (Kleislimorphism m) where
                               (applyKleisli $ arrow id >>> arrow Right)
   right' f = Kleisli $ either (applyKleisli $ arrow id >>> arrow Left)
                               (applyKleisli $ f        >>> arrow Right)
+
+instance Choice Arr where
+  left'  (MkArr f) = MkArr $ either (Left . f) Right
+  right' (MkArr f) = MkArr $ either Left (Right . f)
+
+instance Choice Reviewed where
+  left'  (Review b) = Review $ Left b
+  right' (Review b) = Review $ Right b
 
 instance Applicative f => Choice (UpStarred f) where
   left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
