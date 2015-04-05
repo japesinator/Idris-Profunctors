@@ -1,6 +1,7 @@
 module Data.Profunctor.Closed
 
 import Control.Arrow
+import Control.Category
 import Data.Profunctor
 
 ||| A Closed Profunctor that allows the closed structure to pass through
@@ -12,6 +13,9 @@ class Profunctor p => Closed (p : Type -> Type -> Type) where
   ||| ````
   |||
   closed : {x : _} -> p a b -> p (x -> a) (x -> b)
+
+instance Closed Arr where
+  closed (MkArr f) = MkArr $ (.) f
 
 instance Functor f => Closed (DownStarred f) where
   closed (DownStar fab) = DownStar $ \fxa,x => fab $ map (\f => f x) fxa
@@ -46,6 +50,10 @@ instance Strong p => Strong (Closure p) where
 
 instance Profunctor p => Functor (Closure p a) where
   map = rmap
+
+close : Closed p => {a,b : Type} -> ({a',b' : Type} -> p a' b' -> q a' b') ->
+                                                       p a b -> (Closure q) a b
+close f p = Close {x=believe_me p} $ f $ closed p
 
 ||| Environment is left adjoint to Closure
 data Environment : (Type -> Type -> Type) -> Type -> Type -> Type where
