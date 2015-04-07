@@ -3,6 +3,7 @@ module Data.Profunctor.Closed
 import Control.Arrow
 import Control.Category
 import Data.Profunctor
+import Data.Profunctor.Unsafe
 
 ||| A Closed Profunctor that allows the closed structure to pass through
 class Profunctor p => Closed (p : Type -> Type -> Type) where
@@ -43,6 +44,10 @@ instance Profunctor p => Profunctor (Closure p) where
   dimap f g (Close p) = Close $ dimap ((.) f) ((.) g) p
   lmap  f   (Close p) = Close $ lmap  ((.) f)         p
   rmap    g (Close p) = Close $ rmap          ((.) g) p
+
+instance UnsafeProfunctor p => UnsafeProfunctor (Closure p) where
+  w         #. (Close p) = Close $ ((.) w) #. p
+  (Close p) .# w         = Close $ p       .# ((.) w)
 
 instance Strong p => Strong (Closure p) where
   first'   (Close p) = Close $ dimap hither yon $ first' p

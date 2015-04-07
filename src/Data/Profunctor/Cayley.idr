@@ -3,6 +3,7 @@ module Data.Profunctor.Cayley
 import Control.Arrow
 import Control.Category
 import Data.Profunctor
+import Data.Profunctor.Unsafe
 
 ||| Converts Monads on standard types to Monads on Profunctors
 record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
@@ -16,6 +17,11 @@ instance (Functor f, Profunctor p) => Profunctor (Cayleyed f p) where
   dimap f g = Cayley . map (dimap f g) . runCayley
   lmap  f   = Cayley . map (lmap  f  ) . runCayley
   rmap    g = Cayley . map (rmap    g) . runCayley
+
+instance (UnsafeProfunctor p, Functor f) =>
+         UnsafeProfunctor (Cayleyed f p) where
+  w          #. (Cayley p) = Cayley $ map (w #.) p
+  (Cayley p) .# w          = Cayley $ map (.# w) p
 
 instance (Functor f, Strong p) => Strong (Cayleyed f p) where
   first'  = Cayley . map first'  . runCayley
