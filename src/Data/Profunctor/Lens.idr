@@ -55,6 +55,10 @@ view l = runForget $ l $ Forget id
 over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
 over l = runArr . l . MkArr
 
+||| Set something to a specific value with a lens
+set : Lens {p=Arr} s t a b -> b -> s -> t
+set l v = over l $ \_ => v
+
 ||| A lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
 _1 = lens $ \(a,b) => ((\x => (x,b)), a)
