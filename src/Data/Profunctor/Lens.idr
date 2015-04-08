@@ -6,11 +6,12 @@ import Data.Profunctor
 Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
 Iso {p} s t a b = p a b -> p s t
 
+||| A type-level function to make it easier to talk about "simple" `Lens`,
+||| `Prism`, and `Iso`s
+Simple : (Type -> Type -> Type -> Type -> Type) -> Type -> Type -> Type
+Simple t s a = t s s a a
+
 ||| Turns a coavariant and contravariant function into an `Iso`
-|||
-||| ````idris example
-||| iso fst snd
-||| ````
 iso : Profunctor p => (s -> a) -> (b -> t) -> Iso {p} s t a b
 iso f g = dimap f g -- Eta reduction further breaks this?
 
@@ -87,14 +88,6 @@ Prism {p} s t a b = p a b -> p s t
 prism : Prisming p => (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
 prism f g = lmap g . costrength . rmap f
 
-||| Build a function from a `Prism` to look at stuff
-preview : Prism {p=Forgotten (First a)} s t a b -> s -> Maybe a
-preview l = runFirst . runForget (l $ Forget $ MkFirst . Just)
-
-||| Build a function from a `Prism` to `map`
-review : Prism {p=Tagged} s t a b -> b -> t
-review l = runTagged . l . Tag
-
 record First : Type -> Type where
   MkFirst : (runFirst : Maybe a) -> First a
 
@@ -104,6 +97,14 @@ instance Semigroup (First a) where
 
 instance Monoid (First a) where
   neutral = MkFirst Nothing
+
+||| Build a function from a `Prism` to look at stuff
+preview : Prism {p=Forgotten (First a)} s t a b -> s -> Maybe a
+preview l = runFirst . runForget (l $ Forget $ MkFirst . Just)
+
+||| Build a function from a `Prism` to `map`
+review : Prism {p=Tagged} s t a b -> b -> t
+review l = runTagged . l . Tag
 
 ||| A `Prism` for the left half of an `Either`
 _l : Prisming p => p a b -> p (Either a c) (Either b c)
