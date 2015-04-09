@@ -8,6 +8,12 @@ Iso {p} s t a b = p a b -> p s t
 
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
+|||
+||| ````idris example
+||| fstStrLens : Profunctor p => Simple (Lens {p}) (String, String) String
+||| fstStrLens = _1
+||| ````
+|||
 Simple : (Type -> Type -> Type -> Type -> Type) -> Type -> Type -> Type
 Simple t s a = t s s a a
 
@@ -43,21 +49,36 @@ instance Lensing Arr where
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
 Lens {p} s t a b = p a b -> p s t
 
-||| Build a `Lens` out of a function. Note this takes on argument, not two
+||| Build a `Lens` out of a function. Note this takes one argument, not two
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
 lens f = lmap f . strength
 
-||| Build a function to look at stuff from a lens
+||| Build a function to look at stuff from a Lens
 view : Lens {p=Forgotten a} s t a b -> s -> a
 view l = runForget $ l $ Forget id
 
-||| Build a function to `map` from a lens
+infixl 8 ^.
+||| Infix synonym for `view`
+(^.) : Lens {p=Forgotten a} s t a b -> s -> a
+(^.) = view
+
+||| Build a function to `map` from a Lens
 over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
 over l = runArr . l . MkArr
 
-||| Set something to a specific value with a lens
+infixr 4 %~
+||| Infix synonym for `over`
+(%~) : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
+(%~) = over
+
+||| Set something to a specific value with a Lens
 set : Lens {p=Arr} s t a b -> b -> s -> t
 set l v = over l $ \_ => v
+
+infixr 4 .~
+||| Infix synonym for `set`
+(.~) : Lens {p=Arr} s t a b -> b -> s -> t
+(.~) = set
 
 ||| A lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
