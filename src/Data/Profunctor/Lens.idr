@@ -47,7 +47,7 @@ instance Lensing Arr where
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
-Lens {p} s t a b = p a b -> p s t
+Lens {p} = Iso {p}
 
 ||| Build a `Lens` out of a function. Note this takes one argument, not two
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
@@ -66,14 +66,14 @@ infixl 8 ^.
 over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
 over l = runArr . l . MkArr
 
-infixr 4 %~
+infixr 4 &~
 ||| Infix synonym for `over`
-(%~) : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
-(%~) = over
+(&~) : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
+(&~) = over
 
 ||| Set something to a specific value with a Lens
 set : Lens {p=Arr} s t a b -> b -> s -> t
-set l v = over l $ \_ => v
+set l = over l . const
 
 infixr 4 .~
 ||| Infix synonym for `set`
@@ -82,11 +82,11 @@ infixr 4 .~
 
 ||| A lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
-_1 = lens $ \(a,b) => ((\x => (x,b)), a)
+_1 = lens $ \(a,b) => (\x => (x,b), a)
 
 ||| A lens for the second element of a tuple
 _2 : Lensing p => Lens {p} (b, a) (b, x) a x
-_2 = lens $ \(b,a) => ((\x => (b,x)), a)
+_2 = lens $ \(b,a) => (\x => (b,x), a)
 
 ||| A `Strong` `Profunctor` that can make a `Lens`
 class Choice p => Prisming (p : Type -> Type -> Type) where
@@ -107,7 +107,7 @@ instance Prisming Tagged where
 
 ||| A `Lens` for sum types instead of product types
 Prism : Prisming p => Type -> Type -> Type -> Type -> Type
-Prism {p} s t a b = p a b -> p s t
+Prism {p} = Iso {p}
 
 ||| Build a `Prism` from two functions
 prism : Prisming p => (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
@@ -124,7 +124,7 @@ instance Monoid (First a) where
   neutral = MkFirst Nothing
 
 ||| Build a function from a `Prism` to look at stuff
-preview : Prism {p=Forgotten (First a)} s t a b -> s -> Maybe a
+preview : Prism {p=Forgotten $ First a} s t a b -> s -> Maybe a
 preview l = runFirst . runForget (l $ Forget $ MkFirst . Just)
 
 ||| Build a function from a `Prism` to `map`
