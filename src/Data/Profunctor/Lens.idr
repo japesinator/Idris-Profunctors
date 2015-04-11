@@ -53,6 +53,10 @@ Lens {p} = Iso {p}
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
 lens f = lmap f . strength
 
+||| A two-argument version of `lens` for compatibility with other libraries
+lens' : Lensing p => (s -> a) -> (s -> b -> t) -> Lens {p} s t (a, s) (b, s)
+lens' = lensIso
+
 ||| Build a function to look at stuff from a Lens
 view : Lens {p=Forgotten a} s t a b -> s -> a
 view l = runForget $ l $ Forget id
