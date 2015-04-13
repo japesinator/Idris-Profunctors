@@ -2,10 +2,6 @@ module Data.Profunctor.Lens
 
 import Data.Profunctor
 
-||| An isomorphism family. A less strong `Prism` or `Lens`
-Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
-Iso {p} s t a b = p a b -> p s t
-
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
 |||
@@ -16,6 +12,14 @@ Iso {p} s t a b = p a b -> p s t
 |||
 Simple : (Type -> Type -> Type -> Type -> Type) -> Type -> Type -> Type
 Simple t s a = t s s a a
+
+||| An isomorphism family. A less strong `Prism` or `Lens`
+Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
+Iso {p} s t a b = p a b -> p s t
+
+||| An isomorphism family that does not change types
+Iso' : Profunctor p => Type -> Type -> Type
+Iso' {p} = Simple $ Iso {p}
 
 ||| Turns a coavariant and contravariant function into an `Iso`
 iso : Profunctor p => (s -> a) -> (b -> t) -> Iso {p} s t a b
@@ -48,6 +52,10 @@ instance Lensing Arr where
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
 Lens {p} = Iso {p}
+
+||| A Lens family that does not change types
+Lens' : Lensing p => Type -> Type -> Type
+Lens' {p} = Simple $ Lens {p}
 
 ||| Build a `Lens` out of a function. Note this takes one argument, not two
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
@@ -101,7 +109,7 @@ instance Prisming Arr where
   costrength (MkArr f) = MkArr $ either id f
 
 instance Monoid r => Prisming (Forgotten r) where
-  costrength pab = Forget $ either (const neutral) $ runForget pab
+  costrength p = Forget $ either (const neutral) $ runForget p
 
 instance Applicative f => Prisming (UpStarred f) where
   costrength p = UpStar $ either pure $ runUpStar p
@@ -112,6 +120,10 @@ instance Prisming Tagged where
 ||| A `Lens` for sum types instead of product types
 Prism : Prisming p => Type -> Type -> Type -> Type -> Type
 Prism {p} = Iso {p}
+
+||| A Prism that does not change types
+Prism' : Prisming p => Type -> Type -> Type
+Prism' {p} = Simple $ Prism {p}
 
 ||| Build a `Prism` from two functions
 prism : Prisming p => (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
