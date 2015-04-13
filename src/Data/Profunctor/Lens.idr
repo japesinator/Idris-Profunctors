@@ -1,6 +1,9 @@
 module Data.Profunctor.Lens
 
+import Data.Fin
+import Data.HVect
 import Data.Profunctor
+import Data.Vect
 
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
@@ -92,13 +95,35 @@ infixr 4 .~
 (.~) : Lens {p=Arr} s t a b -> b -> s -> t
 (.~) = set
 
-||| A lens for the first element of a tuple
+||| A Lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
 _1 = lens $ \(a,b) => (\x => (x,b), a)
 
-||| A lens for the second element of a tuple
+||| A Lens for the second element of a tuple
 _2 : Lensing p => Lens {p} (b, a) (b, x) a x
 _2 = lens $ \(b,a) => (\x => (b,x), a)
+
+||| A Lens for the first element of a non-empty vector
+_vCons : Lensing p => Lens {p} (Vect (S n) a) (Vect (S n) b)
+                               (a, Vect n a) (b, Vect n b)
+_vCons = lens $ \(x::xs) => (uncurry (::), (x,xs))
+
+||| A Lens for the nth element of a big-enough vector
+_vNth : Lensing p => {m : Nat} -> (n : Fin (S m)) ->
+        Lens {p} (Vect (S m) a) (Vect (S m) b) (a, Vect m a) (b, Vect m b)
+_vNth n = lens $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
+
+||| A Lens for the nth element of a big-enough heterogenous vector
+_hVNth : Lensing p => {l : Nat} -> (i : Fin (S l)) ->
+                      Lens {p} (HVect us) (HVect vs)
+                               (index i us, HVect (deleteAt i us))
+                               (index i vs, HVect (deleteAt i vs))
+_hVNth n = lens $ \v =>
+           (believe_me . uncurry (insertAt' n), (index n v, deleteAt n v)) where
+  insertAt' : (i : Fin (S l)) -> a -> HVect us -> HVect (insertAt i a us)
+  insertAt' FZ     y xs      = y :: xs
+  insertAt' (FS k) y (x::xs) = x :: insertAt' k y xs
+  insertAt' (FS k) y []      = absurd k
 
 ||| A `Strong` `Profunctor` that can make a `Lens`
 class Choice p => Prisming (p : Type -> Type -> Type) where
@@ -156,10 +181,10 @@ _r : Prisming p => p a b -> p (Either c a) (Either c b)
 _r = prism Right $ either (Left . Left) Right
 
 ||| A `Prism` for the left side of a `List`
-_cons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
-_cons = prism (uncurry (::)) $ \aas => case aas of
-                                            (a::as) => Right (a, as)
-                                            []      => Left  []
+_lCons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
+_lCons = prism (uncurry (::)) $ \aas => case aas of
+                                             (a::as) => Right (a, as)
+                                             []      => Left  []
 
 ||| A `Prism` for the left side of a `String`
 _strCons : Prisming p => Prism' {p} String (Char, String)
