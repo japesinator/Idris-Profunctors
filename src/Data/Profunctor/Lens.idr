@@ -154,3 +154,15 @@ _l = prism Left $ either Right (Left . Right)
 ||| A `Prism` for the right half of an `Either`
 _r : Prisming p => p a b -> p (Either c a) (Either c b)
 _r = prism Right $ either (Left . Left) Right
+
+||| A `Prism` for the left side of a `List`
+_cons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
+_cons = prism (uncurry (::)) $ \aas => case aas of
+                                            (a::as) => Right (a, as)
+                                            []      => Left  []
+
+||| A `Prism` for the left side of a `String`
+_strCons : Prisming p => Prism' {p} String (Char, String)
+_strCons = prism (uncurry strCons) $ \aas => case unpack aas of
+                                                  (a::as) => Right (a, pack as)
+                                                  []      => Left  ""
