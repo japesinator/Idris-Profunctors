@@ -40,7 +40,7 @@ instance Monad m => Profunctor (Kleislimorphism m) where
 ||| An injective (->)
 |||
 ||| ````idris example
-||| believe_me : Arr a b
+||| MkArr believe_me : Arr a b
 ||| ````
 |||
 record Arr : Type -> Type -> Type where
