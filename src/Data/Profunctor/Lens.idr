@@ -3,6 +3,7 @@ module Data.Profunctor.Lens
 import Data.Fin
 import Data.HVect
 import Data.Profunctor
+import Data.Profunctor.Iso
 import Data.Vect
 
 ||| A `Strong` `Profunctor` that can be used in a `Lens`

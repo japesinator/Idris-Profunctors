@@ -1,6 +1,7 @@
 module Data.Profunctor.Prism
 
 import Data.Profunctor
+import Data.Profunctor.Iso
 
 ||| A `Choice` `Profunctor` that can be used in a `Prism`
 class Choice p => Prisming (p : Type -> Type -> Type) where
