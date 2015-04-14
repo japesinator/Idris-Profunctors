@@ -8,6 +8,7 @@ modules = Data.Profunctor
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
         , Data.Profunctor.Lens
+        , Data.Profunctor.Prism
         , Data.Profunctor.Rep
         , Data.Profunctor.Trace
         , Data.Profunctor.Tambara
