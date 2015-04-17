@@ -22,11 +22,11 @@ instance Profunctor p => Profunctor (Tambarred {c} p) where
 
 instance Category p => Category (Tambarred {c} p) where
   id                        = Tambara id
-  (Tambara p) . (Tambara q) = Tambara (p . q)
+  (Tambara p) . (Tambara q) = Tambara $ p . q
 
 instance Arrow p => Arrow (Tambarred {c} p) where
   arrow          f  = Tambara $ first $ arrow f
-  first (Tambara f) = Tambara (arrow go . first f . arrow go)
+  first (Tambara f) = Tambara $ arrow go . first f . arrow go
     where
       -- Ticks are used in local functions because otherwise idris gets super
       --   confused about names
@@ -38,8 +38,8 @@ instance Arrow p => Arrow (Tambarred {c} p) where
       --   confused about names
       swap : (a',b') -> (b',a')
       swap   (x',y') =  (y',x')
-  f      ***     g  = first f >>> second g
-  f      &&&     g  = arrow (\b => (b,b)) >>> f *** g
+  f *** g  = first f >>> second g
+  f &&& g  = arrow (\b => (b,b)) >>> f *** g
 
 instance Choice p => Choice (Tambarred {c} p) where
   left' (Tambara p) = Tambara $ dimap hither yon $ left' p
@@ -55,7 +55,7 @@ instance Profunctor p => Functor (Tambarred {c} p a) where
   map = rmap
 
 instance (Profunctor p, Arrow p) => Applicative (Tambarred {c} p a) where
-  pure x  = arrow (const x)
+  pure x  = arrow $ const x
   f <*> g = arrow (uncurry id) . (f &&& g)
 
 ||| Pastroyed is left adjunct to Tambarred
@@ -78,13 +78,13 @@ runCotambara (Cotambara p) = p
 instance Profunctor p => Profunctor (Cotambarred {c} p) where
   dimap f g (Cotambara p) = Cotambara $ dimap (mapLeft f) (mapLeft g) p
     where
-      mapLeft : (a' -> b') -> Either a' c' -> Either b'     c'
-      mapLeft   f'            (Left  a')    = Left   (f' a')
-      mapLeft   _             (Right    b') = Right         b'
+      mapLeft : (a' -> b') -> Either a' c' -> Either b' c'
+      mapLeft   f'            (Left  a')    = Left  $ f' a'
+      mapLeft   _             (Right    b') = Right      b'
 
 instance Category p => Category (Cotambarred {c} p) where
   id                            = Cotambara $ id
-  (Cotambara f) . (Cotambara g) = Cotambara   (f . g)
+  (Cotambara f) . (Cotambara g) = Cotambara $ f . g
 
 instance Profunctor p => Functor (Cotambarred {c} p a) where
   map = rmap

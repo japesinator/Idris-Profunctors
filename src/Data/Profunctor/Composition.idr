@@ -29,9 +29,9 @@ record Rifted : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
   Rift : {x : Type} -> (runRift : p b x -> q a x) -> Rifted p q a b
 
 instance (Profunctor p, Profunctor q) => Profunctor (Rifted p q) where
-  dimap ca bd f = Rift (lmap ca . runRift f . lmap bd)
-  lmap  ca    f = Rift (lmap ca . runRift f          )
-  rmap     bd f = Rift (          runRift f . lmap bd)
+  dimap ca bd f = Rift $ lmap ca . runRift f . lmap bd
+  lmap  ca    f = Rift $ lmap ca . runRift f
+  rmap     bd f = Rift $           runRift f . lmap bd
 
 instance Profunctor p => Functor (Rifted p q a) where
-  map bd f = Rift (runRift f . lmap bd)
+  map bd f = Rift $ runRift f . lmap bd

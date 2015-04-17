@@ -15,8 +15,8 @@ instance (Profunctor p, Profunctor q) => Profunctor (Ran p q) where
   rmap     bd f = Run $ rmap bd . runRan f
 
 instance Profunctor q => Functor (Ran p q a) where
-  map bd f = Run (rmap bd . runRan f)
+  map bd f = Run $ rmap bd . runRan f
 
 ||| Split up composed Profunctors by putting a Ran in the middle
 curryRan : (Procomposed p q -/-> r) -> p -/-> Ran q r
-curryRan f a b p = Run $ \q => f a b (Procompose p q)
+curryRan f a b p = Run $ \q => f a b $ Procompose p q

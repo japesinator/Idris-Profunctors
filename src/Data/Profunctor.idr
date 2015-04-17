@@ -200,8 +200,8 @@ instance Strong Arr where
   second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
 
 instance Functor m => Strong (UpStarred m) where
-  first'  (UpStar f) = UpStar $ (\ac => map (\b' => (b', snd ac)) (f $ fst ac))
-  second' (UpStar f) = UpStar $ (\ca => map (MkPair $   fst ca) (f $ snd ca))
+  first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) $ f $ fst ac
+  second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  $ f $ snd ca
 
 instance Arrow p => Strong (WrappedArrow p) where
   first'  (WrapArrow k) = WrapArrow $ first  k
