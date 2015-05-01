@@ -76,7 +76,7 @@ instance Functor f => Functor (UpStarred f a) where
   map = rmap
 
 instance Applicative f => Applicative (UpStarred f a) where
-  pure a                      = UpStar $ \_ => pure a
+  pure = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
 instance Monad f => Monad (UpStarred f a) where
