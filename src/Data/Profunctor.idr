@@ -189,10 +189,10 @@ class Profunctor p => Strong (p : Type -> Type -> Type) where
 
 instance Monad m => Strong (Kleislimorphism m) where
   first'  (Kleisli f) = Kleisli $ \ac => do
-    b <- f (fst ac)
+    b <- f $ fst ac
     return (b, snd ac)
   second' (Kleisli f) = Kleisli $ \ca => do
-    b <- f (snd ca)
+    b <- f $ snd ca
     return (fst ca, b)
 
 instance Strong Arr where
