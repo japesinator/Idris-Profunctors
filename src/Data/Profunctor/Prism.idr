@@ -32,8 +32,9 @@ Prism' {p} = Simple $ Prism {p}
 prism : Prisming p => (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
 prism f g = lmap g . costrength . rmap f
 
-record First : Type -> Type where
-  MkFirst : (runFirst : Maybe a) -> First a
+record First a where
+  constructor MkFirst
+  runFirst : Maybe a
 
 instance Semigroup (First a) where
   (MkFirst Nothing) <+> r = r

@@ -3,5 +3,6 @@ module Data.Profunctor.Trace
 import Data.Profunctor
 
 ||| Coend of Profunctor
-record Traced : (Type -> Type -> Type) -> Type where
-  Trace : f a a -> Traced f
+record Traced (f : Type -> Type -> Type) where
+  constructor Trace
+  runTrace : f a a

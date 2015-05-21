@@ -25,14 +25,15 @@ instance Monoid r => Closed (Forgotten r) where
   closed _ = Forget $ \_ => neutral
 
 ||| Closure adjoins a Closed structure to any Profunctor
-record Closure : (Type -> Type -> Type) -> Type -> Type -> Type where
+record Closure (p : Type -> Type -> Type) a b where
   ||| Adjoin a closed-structured Profunctor to a profunctor
   |||
   ||| ````idris example
   ||| Close $ closed $ DownStar $ show
   ||| ````
   |||
-  Close : {x : _} -> (runClosure : p (x -> a) (x -> b)) -> Closure p a b
+  constructor Close
+  runClosure : p (x -> a) (x -> b)
 
 hither : (s -> (a,b)) -> (s -> a, s -> b)
 hither h = (fst . h, snd . h)

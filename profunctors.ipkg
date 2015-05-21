@@ -10,7 +10,5 @@ modules = Data.Profunctor
         , Data.Profunctor.Iso
         , Data.Profunctor.Lens
         , Data.Profunctor.Prism
-        , Data.Profunctor.Rep
         , Data.Profunctor.Trace
-        , Data.Profunctor.Tambara
         , Data.Verified.Profunctor

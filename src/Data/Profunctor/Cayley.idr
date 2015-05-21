@@ -6,12 +6,12 @@ import Data.Profunctor
 import Data.Profunctor.Unsafe
 
 ||| Converts Monads on standard types to Monads on Profunctors
-record Cayleyed : (Type -> Type) -> (Type -> Type -> Type) ->
-                                     Type -> Type -> Type where
+record Cayleyed (f : Type -> Type) (p : Type -> Type -> Type) a b where
   ||| ````idris example
   ||| Cayley $ Just $ Kleisli $ \x => Just $ reverse x
   ||| ````
-  Cayley : (runCayley : f (p a b)) -> Cayleyed f p a b
+  constructor Cayley
+  runCayley : f (p a b)
 
 instance (Functor f, Profunctor p) => Profunctor (Cayleyed f p) where
   dimap f g = Cayley . map (dimap f g) . runCayley

@@ -43,15 +43,17 @@ instance Monad m => Profunctor (Kleislimorphism m) where
 ||| believe_me : Arr a b
 ||| ````
 |||
-record Arr : Type -> Type -> Type where
-  MkArr : (runArr : (a -> b)) -> Arr a b
+record Arr a b where
+  constructor MkArr
+  runArr : (a -> b)
 
 instance Profunctor Arr where
   dimap f g (MkArr h) = MkArr $ g . h . f
 
 ||| A method of attaching a phantom type as a "tag"
-record Tagged : Type -> Type -> Type where
-  Tag : (runTagged : b) -> Tagged a b
+record Tagged a b where
+  constructor Tag
+  runTagged : b
 
 instance Profunctor Tagged where
   lmap _ (Tag c) = Tag c
@@ -66,8 +68,9 @@ instance Profunctor Tagged where
 ||| UpStar $ \x => Just $ isDigit x
 ||| ````
 |||
-record UpStarred : (Type -> Type) -> (Type -> Type -> Type) where
-  UpStar : (runUpStar : d -> f c) -> UpStarred f d c
+record UpStarred (f : Type -> Type) d c where
+  constructor UpStar
+  runUpStar : d -> f c
 
 instance Functor f => Profunctor (UpStarred f) where
   dimap ab cd (UpStar bfc) = UpStar $ map cd . bfc . ab
@@ -94,8 +97,9 @@ instance Monad f => Monad (UpStarred f a) where
 ||| DownStar $ show
 ||| ````
 |||
-record DownStarred : (Type -> Type) -> (Type -> Type -> Type) where
-  DownStar : (runDownStar : f d -> c) -> DownStarred f d c
+record DownStarred (f : Type -> Type) d c where
+  constructor DownStar
+  runDownStar : f d -> c
 
 instance Functor f => Profunctor (DownStarred f) where
   dimap ab cd (DownStar fbc) = DownStar $ cd . fbc . map ab
@@ -120,8 +124,9 @@ instance Monad (DownStarred f a) where
 ||| WrapArrow $ arrow ((+) 1)
 ||| ````
 |||
-record WrappedArrow : (Type -> Type -> Type) -> Type -> Type -> Type where
-  WrapArrow : (unwrapArrow : p a b) -> WrappedArrow p a b
+record WrappedArrow (p : Type -> Type -> Type) a b where
+  constructor WrapArrow
+  unwrapArrow : p a b
 
 instance Category p => Category (WrappedArrow p) where
   (WrapArrow f) . (WrapArrow g) = WrapArrow $ f . g
@@ -148,8 +153,9 @@ instance Arrow p => Profunctor (WrappedArrow p) where
 ||| Forget ((+) 1)
 ||| ````
 |||
-record Forgotten : Type -> Type -> Type -> Type where
-  Forget : (runForget : a -> r) -> Forgotten r a b
+record Forgotten r a b where
+  constructor Forget
+  runForget : a -> r
 
 instance Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
