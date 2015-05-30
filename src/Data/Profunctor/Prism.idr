@@ -22,7 +22,7 @@ instance Prisming Tagged where
 
 ||| A `Lens` for sum types instead of product types
 Prism : Prisming p => Type -> Type -> Type -> Type -> Type
-Prism {p} = Iso {p}
+Prism {p} = preIso {p}
 
 ||| A Prism that does not change types
 Prism' : Prisming p => Type -> Type -> Type

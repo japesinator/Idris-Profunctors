@@ -13,9 +13,12 @@ import Data.Profunctor
 Simple : (Type -> Type -> Type -> Type -> Type) -> Type -> Type -> Type
 Simple t s a = t s s a a
 
+preIso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+preIso {p} s t a b = p a b -> p s t
+
 ||| An isomorphism family. A less strong `Prism` or `Lens`
 Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
-Iso {p} s t a b = p a b -> p s t
+Iso {p} = preIso {p}
 
 ||| An isomorphism family that does not change types
 Iso' : Profunctor p => Type -> Type -> Type

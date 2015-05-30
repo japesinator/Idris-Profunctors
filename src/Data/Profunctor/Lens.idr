@@ -22,7 +22,7 @@ instance Lensing Arr where
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
-Lens {p} = Iso {p}
+Lens {p} = preIso {p}
 
 ||| A Lens family that does not change types
 Lens' : Lensing p => Type -> Type -> Type
