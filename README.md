@@ -10,6 +10,12 @@ Contains
 
   * Various Profunctor/Functor transformations
 
+  * Lenses
+
+  * Isomorphisms
+
+  * Prisms
+
 Installation
 ------------
 
