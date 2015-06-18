@@ -12,13 +12,13 @@ class Strong p => Lensing (p : Type -> Type -> Type) where
   strength = (rmap $ uncurry id) . second'
 
 instance Lensing (Forgotten r) where
-  strength (Forget ar) = Forget $ (ar . snd)
+  strength (Forget ar) = Forget $ ar . snd
 
 instance Functor f => Lensing (UpStarred f) where
-  strength (UpStar f) = UpStar $ \(bt, a) => bt <$> f a
+  strength (UpStar f) = UpStar $ uncurry $ (. f) . (<$>)
 
 instance Lensing Arr where
-  strength (MkArr f) = MkArr $ \(bt, a) => bt $ f a
+  strength (MkArr f) = MkArr $ uncurry (. f)
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
@@ -38,7 +38,7 @@ lens' = lensIso
 
 ||| Build a function to look at stuff from a Lens
 view : Lens {p=Forgotten a} s t a b -> s -> a
-view l = runForget $ l $ Forget id
+view = runForget . (\f => f $ Forget id)
 
 infixl 8 ^.
 ||| Infix synonym for `view`
@@ -47,7 +47,7 @@ infixl 8 ^.
 
 ||| Build a function to `map` from a Lens
 over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
-over l = runArr . l . MkArr
+over = (runArr .) . (. MkArr)
 
 infixr 4 &~
 ||| Infix synonym for `over`
@@ -56,7 +56,7 @@ infixr 4 &~
 
 ||| Set something to a specific value with a Lens
 set : Lens {p=Arr} s t a b -> b -> s -> t
-set l = over l . const
+set = (. const) . over
 
 infixr 4 .~
 ||| Infix synonym for `set`
