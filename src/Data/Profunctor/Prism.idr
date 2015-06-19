@@ -49,7 +49,7 @@ preview l = runFirst . runForget (l $ Forget $ MkFirst . Just)
 
 ||| Build a function from a `Prism` to `map`
 review : Prism {p=Tagged} s t a b -> b -> t
-review l = runTagged . l . Tag
+review = (runTagged .) . (. Tag)
 
 ||| A `Prism` for the left half of an `Either`
 _l : Prisming p => p a b -> p (Either a c) (Either b c)

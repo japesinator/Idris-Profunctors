@@ -83,9 +83,7 @@ instance Applicative f => Applicative (UpStarred f a) where
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
 instance Monad f => Monad (UpStarred f a) where
-  (UpStar m) >>= f = UpStar $ \e => do
-    a <- m e
-    runUpStar (f a) e
+  (UpStar m) >>= f = UpStar $ \e => m e >>= flip runUpStar e . f
 
 -- }}}
 -- DownStar
@@ -108,7 +106,7 @@ instance Functor (DownStarred f a) where
   map k (DownStar f) = DownStar $ k . f
 
 instance Applicative (DownStarred f a) where
-  pure a                          = DownStar $ \_ => a
+  pure                            = DownStar . const
   (DownStar ff) <*> (DownStar fx) = DownStar $ \a => ff a $ fx a
 
 instance Monad (DownStarred f a) where
@@ -161,10 +159,10 @@ instance Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
 
 instance Functor (Forgotten r a) where
-  map f (Forget k) = Forget k
+  map _ (Forget k) = Forget k
 
 instance Foldable (Forgotten r a) where
-  foldr _ z _ = z
+  foldr = const const
 
 instance Traversable (Forgotten r a) where
   traverse _ (Forget k) = pure $ Forget k
@@ -194,12 +192,8 @@ class Profunctor p => Strong (p : Type -> Type -> Type) where
   second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
 
 instance Monad m => Strong (Kleislimorphism m) where
-  first'  (Kleisli f) = Kleisli $ \ac => do
-    b <- f $ fst ac
-    return (b, snd ac)
-  second' (Kleisli f) = Kleisli $ \ca => do
-    b <- f $ snd ca
-    return (fst ca, b)
+  first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => return (b, snd ac)
+  second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= \b => return (fst ca, b)
 
 instance Strong Arr where
   first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
