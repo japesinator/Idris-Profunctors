@@ -68,6 +68,22 @@ infixr 4 .~
 (.~) : Lens {p=Arr} s t a b -> b -> s -> t
 (.~) = set
 
+infixr 4 +~
+(+~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(+~) = (. (+)) . over
+
+infixr 4 -~
+(-~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(-~) = (. (-)) . over
+
+infixr 4 *~
+(*~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(*~) = (. (*)) . over
+
+infixr 4 /~
+(/~) : Lens {p=Arr} s t Float Float -> Float -> s -> t
+(/~) = (. (/)) . over
+
 ||| A Lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
 _1 = lens $ \(a,b) => (\x => (x,b), a)
