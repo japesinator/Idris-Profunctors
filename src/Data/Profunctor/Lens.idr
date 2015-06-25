@@ -6,6 +6,11 @@ import Data.Profunctor
 import Data.Profunctor.Iso
 import Data.Vect
 
+infixl 1 &
+
+(&) : a -> (a -> b) -> b
+a & f = f a
+
 ||| A `Strong` `Profunctor` that can be used in a `Lens`
 class Strong p => Lensing (p : Type -> Type -> Type) where
   strength : p a b -> p (b -> t, a) t
