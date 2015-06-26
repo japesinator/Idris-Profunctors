@@ -61,7 +61,7 @@ infixr 4 &~
 
 ||| Set something to a specific value with a Lens
 set : Lens {p=Arr} s t a b -> b -> s -> t
-set = (. over) (. const)
+set = (. const) . over
 
 infixr 4 .~
 ||| Infix synonym for `set`
