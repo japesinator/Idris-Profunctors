@@ -69,20 +69,29 @@ infixr 4 .~
 (.~) = set
 
 infixr 4 +~
+||| Increment the target of a lens by a number
 (+~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
 (+~) = (. (+)) . over
 
 infixr 4 -~
+||| Decrement the target of a lens by a number
 (-~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
 (-~) = (. (-)) . over
 
 infixr 4 *~
+||| Multiply the target of a lens by a number
 (*~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
 (*~) = (. (*)) . over
 
 infixr 4 /~
+||| Divide the target of a lens by a number
 (/~) : Lens {p=Arr} s t Float Float -> Float -> s -> t
 (/~) = (. (/)) . over
+
+infixr 4 <+>~
+||| Associatively combine the target of a Lens with another value
+(<+>~) : Semigroup a => Lens {p=Arr} s t a a -> a -> s -> t
+(<+>~) = (. (<+>)) . over
 
 ||| A Lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
