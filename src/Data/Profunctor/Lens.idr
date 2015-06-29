@@ -1,6 +1,7 @@
 module Data.Profunctor.Lens
 
 import Data.Fin
+import Data.Floats
 import Data.HVect
 import Data.Profunctor
 import Data.Profunctor.Iso
@@ -92,6 +93,16 @@ infixr 4 <+>~
 ||| Associatively combine the target of a Lens with another value
 (<+>~) : Semigroup a => Lens {p=Arr} s t a a -> a -> s -> t
 (<+>~) = (. (<+>)) . over
+
+infixr 4 $>~
+||| Rightwards sequence the target of a lens with an applicative
+($>~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+($>~) l = over l . (*>)
+
+infixr 4 <$~
+||| Rightwards sequence the target of a lens with an applicative
+(<$~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+(<$~) l = over l . (<*)
 
 ||| A Lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
