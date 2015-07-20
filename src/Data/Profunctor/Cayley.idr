@@ -36,7 +36,7 @@ instance (Applicative f, Category p) => Category (Cayleyed f p) where
   (Cayley fpbc) . (Cayley fpab) = Cayley $ liftA2 (.) fpbc fpab
 
 instance (Applicative f, Arrow p) => Arrow (Cayleyed f p) where
-  arrow f                     = Cayley $ pure $ arrow f
+  arrow                       = Cayley . pure . arrow
   first                       = Cayley . map first  . runCayley
   second                      = Cayley . map second . runCayley
   (Cayley ab) *** (Cayley cd) = Cayley $ liftA2 (***) ab cd

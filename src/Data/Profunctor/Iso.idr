@@ -31,9 +31,9 @@ iso f g = dimap f g -- Eta reduction further breaks this?
 ||| Builds an `Iso` useful for constructing a `Lens`
 lensIso : Profunctor p =>
           (s -> a) -> (s -> b -> t) -> Iso {p} s t (a, s) (b, s)
-lensIso gt st = iso (\s => (gt s, s)) (\(b, s) => st s b)
+lensIso gt = iso (\s => (gt s, s)) . uncurry . flip
 
 ||| Builds an `Iso` useful for constructing a `Prism`
 prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
-prismIso f g = iso g $ either id f
+prismIso = flip iso . either id . Delay

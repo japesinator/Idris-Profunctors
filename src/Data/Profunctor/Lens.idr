@@ -106,11 +106,11 @@ infixr 4 <$~
 
 ||| A Lens for the first element of a tuple
 _1 : Lensing p => Lens {p} (a, b) (x, b) a x
-_1 = lens $ \(a,b) => (\x => (x,b), a)
+_1 = lens $ \(a,b) => (flip MkPair b, a)
 
 ||| A Lens for the second element of a tuple
 _2 : Lensing p => Lens {p} (b, a) (b, x) a x
-_2 = lens $ \(b,a) => (\x => (b,x), a)
+_2 = lens $ \(b,a) => (MkPair b, a)
 
 ||| A Lens for the first element of a non-empty vector
 _vCons : Lensing p => Lens {p} (Vect (S n) a) (Vect (S n) b)

@@ -22,7 +22,7 @@ instance Functor f => Closed (DownStarred f) where
   closed (DownStar fab) = DownStar $ \fxa,x => fab $ map (\f => f x) fxa
 
 instance Monoid r => Closed (Forgotten r) where
-  closed _ = Forget $ \_ => neutral
+  closed = const . Forget $ const neutral
 
 ||| Closure adjoins a Closed structure to any Profunctor
 record Closure (p : Type -> Type -> Type) a b where
@@ -59,7 +59,7 @@ instance Profunctor p => Functor (Closure p a) where
 
 close : Closed p => {a,b : Type} -> ({a',b' : Type} -> p a' b' -> q a' b') ->
                                                        p a b -> (Closure q) a b
-close f p = Close {x=believe_me p} $ f $ closed p
+close f p = Close {x=believe_me p} . f $ closed p
 
 ||| Environment is left adjoint to Closure
 data Environment : (Type -> Type -> Type) -> Type -> Type -> Type where
