@@ -23,7 +23,7 @@ class Profunctor (p : Type -> Type -> Type) where
   ||| ````
   |||
   lmap : (a -> b) -> p b c -> p a c
-  lmap f = dimap f id
+  lmap = flip dimap id
 
   ||| Map over the second argument covariantly
   |||
@@ -56,8 +56,8 @@ record Tagged a b where
   runTagged : b
 
 instance Profunctor Tagged where
-  lmap _ (Tag c) = Tag c
-  rmap f (Tag c) = Tag $ f c
+  lmap   = const $ Tag . runTagged
+  rmap f = Tag . f . runTagged
 
 -- UpStar
 -- {{{
@@ -79,7 +79,7 @@ instance Functor f => Functor (UpStarred f a) where
   map = rmap
 
 instance Applicative f => Applicative (UpStarred f a) where
-  pure = UpStar . const . pure
+  pure                        = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
 instance Monad f => Monad (UpStarred f a) where
@@ -103,7 +103,7 @@ instance Functor f => Profunctor (DownStarred f) where
   dimap ab cd (DownStar fbc) = DownStar $ cd . fbc . map ab
 
 instance Functor (DownStarred f a) where
-  map k (DownStar f) = DownStar $ k . f
+  map = (DownStar .) . (. runDownStar) . (.)
 
 instance Applicative (DownStarred f a) where
   pure                            = DownStar . const
@@ -159,13 +159,13 @@ instance Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
 
 instance Functor (Forgotten r a) where
-  map _ (Forget k) = Forget k
+  map = const $ Forget . runForget
 
 instance Foldable (Forgotten r a) where
   foldr = const const
 
 instance Traversable (Forgotten r a) where
-  traverse _ (Forget k) = pure $ Forget k
+  traverse = const $ pure . Forget . runForget
 
 -- }}}
 -- Strong
@@ -192,8 +192,8 @@ class Profunctor p => Strong (p : Type -> Type -> Type) where
   second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
 
 instance Monad m => Strong (Kleislimorphism m) where
-  first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => return (b, snd ac)
-  second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= \b => return (fst ca, b)
+  first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => pure (b, snd ac)
+  second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= pure . MkPair (fst ca)
 
 instance Strong Arr where
   first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
@@ -204,8 +204,8 @@ instance Functor m => Strong (UpStarred m) where
   second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  $ f $ snd ca
 
 instance Arrow p => Strong (WrappedArrow p) where
-  first'  (WrapArrow k) = WrapArrow $ first  k
-  second' (WrapArrow k) = WrapArrow $ second k
+  first'  = WrapArrow . first  . unwrapArrow
+  second' = WrapArrow . second . unwrapArrow
 
 instance Strong (Forgotten r) where
   first'  (Forget k) = Forget $ k . fst
@@ -246,8 +246,8 @@ instance Choice Arr where
   right' (MkArr f) = MkArr $ either Left (Right . f)
 
 instance Choice Tagged where
-  left'  (Tag b) = Tag $ Left b
-  right' (Tag b) = Tag $ Right b
+  left'  = Tag . Left  . runTagged
+  right' = Tag . Right . runTagged
 
 instance Applicative f => Choice (UpStarred f) where
   left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
