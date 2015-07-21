@@ -18,12 +18,12 @@ class Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
   (.#) = flip lmap
 
 instance UnsafeProfunctor Arr where
-  (#.)   _ = believe_me
-  pbc .# _ = believe_me pbc
+  (#.) = const believe_me
+  (.#) = const . believe_me
 
 instance Monad m => UnsafeProfunctor (Kleislimorphism m) where
-  pbc .# _ = believe_me pbc
+  (.#) = const . believe_me
 
 instance UnsafeProfunctor Tagged where
-  (#.)       _ = believe_me
-  (Tag s) .# _ = Tag s
+  (#.) = const believe_me
+  (.#) = const . Tag . runTagged
