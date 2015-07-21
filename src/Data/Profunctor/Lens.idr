@@ -24,7 +24,7 @@ instance Functor f => Lensing (UpStarred f) where
   strength (UpStar f) = UpStar $ uncurry $ (. f) . (<$>)
 
 instance Lensing Arr where
-  strength (MkArr f) = MkArr $ uncurry (. f)
+  strength = MkArr . uncurry . flip (.) . runArr
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type

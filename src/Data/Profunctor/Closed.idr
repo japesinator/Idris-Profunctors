@@ -16,7 +16,7 @@ class Profunctor p => Closed (p : Type -> Type -> Type) where
   closed : {x : _} -> p a b -> p (x -> a) (x -> b)
 
 instance Closed Arr where
-  closed (MkArr f) = MkArr $ (.) f
+  closed = MkArr . (.) . runArr
 
 instance Functor f => Closed (DownStarred f) where
   closed (DownStar fab) = DownStar $ \fxa,x => fab $ map (\f => f x) fxa

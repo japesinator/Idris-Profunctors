@@ -9,7 +9,7 @@ class Choice p => Prisming (p : Type -> Type -> Type) where
   costrength = rmap (either id id) . right'
 
 instance Prisming Arr where
-  costrength (MkArr f) = MkArr $ either id f
+  costrength = MkArr . either id . Delay . runArr
 
 instance Monoid r => Prisming (Forgotten r) where
   costrength p = Forget $ either (const neutral) $ runForget p
