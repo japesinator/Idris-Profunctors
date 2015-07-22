@@ -21,7 +21,7 @@ instance Lensing (Forgotten r) where
   strength (Forget ar) = Forget $ ar . snd
 
 instance Functor f => Lensing (UpStarred f) where
-  strength (UpStar f) = UpStar $ uncurry $ (. f) . (<$>)
+  strength (UpStar f) = UpStar . uncurry $ (. f) . (<$>)
 
 instance Lensing Arr where
   strength = MkArr . uncurry . flip (.) . runArr

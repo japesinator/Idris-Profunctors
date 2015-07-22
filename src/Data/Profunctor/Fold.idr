@@ -2,8 +2,6 @@ module Data.Profunctor.Fold
 
 import Data.Profunctor
 
-data SnocList a = Snoc (SnocList a) a | Nil
-
 data L a b = MkL (r -> b) (r -> a -> r) r
 
 unfoldL : (s -> (b, a -> s)) -> s -> L a b
@@ -22,8 +20,9 @@ instance Functor (L a) where
 
 instance Applicative (L a) where
   pure b = MkL (const b) (const $ const ()) ()
-  (MkL f u y) <*> (MkL a v z) =
-    MkL (uncurry $ (. a) . f) (\(x, y), b => (u x b, v y b)) (y, z)
+  (MkL f u y) <*> (MkL a v z) = MkL (uncurry $ (. a) . f)
+                                    (\(x, y), b => (u x b, v y b))
+                                    (y, z)
 
 instance Monad (L a) where
   m >>= f = MkL ((. f) . flip runL) ((. pure) . (++)) [] <*> m
@@ -43,8 +42,9 @@ instance Functor (R a) where
 
 instance Applicative (R a) where
   pure b = MkR (const b) (const $ const ()) ()
-  (MkR f u y) <*> (MkR a v z) =
-    MkR (uncurry $ (. a) . f) (\b, (x, y) => (u b x, v b y)) (y, z)
+  (MkR f u y) <*> (MkR a v z) = MkR (uncurry $ (. a) . f)
+                                    (\b, (x, y) => (u b x, v b y))
+                                    (y, z)
 
 instance Monad (R a) where
   m >>= f = MkR ((. f) . flip runR) (::) [] <*> m
