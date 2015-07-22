@@ -4,12 +4,6 @@ import Data.Profunctor
 
 data SnocList a = Snoc (SnocList a) a | Nil
 
-instance Foldable SnocList where
-  foldl f z = go where
-    go (Snoc xs x) = f (go xs) x
-    go Nil         = z
-  foldr f = assert_total . flip $ foldl ((. f) . (.)) id
-
 data L a b = MkL (r -> b) (r -> a -> r) r
 
 unfoldL : (s -> (b, a -> s)) -> s -> L a b
@@ -32,8 +26,7 @@ instance Applicative (L a) where
     MkL (uncurry $ (. a) . f) (\(x, y), b => (u x b, v y b)) (y, z)
 
 instance Monad (L a) where
-  m >>= f = MkL (\xs, a => run xs (f a)) Snoc Nil <*> m where
-    run t (MkL k h z) = k $ foldl h z t
+  m >>= f = MkL ((. f) . flip runL) ((. pure) . (++)) [] <*> m
 
 data R a b = MkR (r -> b) (a -> r -> r) r
 
@@ -54,5 +47,4 @@ instance Applicative (R a) where
     MkR (uncurry $ (. a) . f) (\b, (x, y) => (u b x, v b y)) (y, z)
 
 instance Monad (R a) where
-  m >>= f = MkR ((. f) . run) (::) [] <*> m where
-    run t (MkR k h z) = k $ foldr h z t
+  m >>= f = MkR ((. f) . flip runR) (::) [] <*> m
