@@ -47,6 +47,17 @@ record Arr a b where
   constructor MkArr
   runArr : (a -> b)
 
+instance Category Arr where
+  id  = assert_total id
+  (.) = assert_total (.)
+
+instance Arrow Arr where
+  arrow                   = MkArr
+  first                   = MkArr . (\f,(a,b) => (f a,b)) . runArr
+  second                  = MkArr . (\f,(a,b) => (a,f b)) . runArr
+  (MkArr f) *** (MkArr g) = MkArr $ \(a,b) => (f a, g b)
+  (MkArr f) &&& (MkArr g) = MkArr $ \a => (f a, g a)
+
 instance Profunctor Arr where
   dimap f g (MkArr h) = MkArr $ g . h . f
 
@@ -200,8 +211,8 @@ instance Strong Arr where
   second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
 
 instance Functor m => Strong (UpStarred m) where
-  first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) $ f $ fst ac
-  second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  $ f $ snd ca
+  first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) . f $ fst ac
+  second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  . f $ snd ca
 
 instance Arrow p => Strong (WrappedArrow p) where
   first'  = WrapArrow . first  . unwrapArrow
