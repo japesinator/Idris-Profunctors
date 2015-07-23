@@ -37,3 +37,15 @@ lensIso gt = iso (\s => (gt s, s)) . uncurry . flip
 prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
 prismIso = flip iso . either id . Delay
+
+flipped : Iso {p=Arr} (a -> b -> c) (d -> e -> f) (b -> a -> c) (e -> d -> f)
+flipped = iso flip flip
+
+curried : Iso {p=Arr} ((a, b) -> c) ((d, e) -> f) (a -> b -> c) (d -> e -> f)
+curried = iso curry uncurry
+
+uncurried : Iso {p=Arr} (a -> b -> c) (d -> e -> f) ((a, b )-> c) ((d, e )-> f)
+uncurried = iso uncurry curry
+
+reversed : Iso {p=Arr} (List a) (List b) (List a) (List b)
+reversed = iso reverse reverse
