@@ -27,6 +27,22 @@ instance Applicative (L a) where
 instance Monad (L a) where
   m >>= f = MkL ((. f) . flip runL) ((. pure) . (++)) [] <*> m
 
+instance Semigroup m => Semigroup (L a m) where
+  (<+>) = liftA2 (<+>)
+
+instance Monoid m => Monoid (L a m) where
+  neutral = pure neutral
+
+instance Num n => Num (L a n) where
+  (+)         = liftA2 (+)
+  (-)         = liftA2 (-)
+  (*)         = liftA2 (*)
+  abs         = map abs
+  fromInteger = pure . fromInteger
+
+instance Neg n => Neg (L a n) where
+  negate = map negate
+
 data R a b = MkR (r -> b) (a -> r -> r) r
 
 runR : Foldable t => R a b -> t a -> b
@@ -48,3 +64,19 @@ instance Applicative (R a) where
 
 instance Monad (R a) where
   m >>= f = MkR ((. f) . flip runR) (::) [] <*> m
+
+instance Semigroup m => Semigroup (R a m) where
+  (<+>) = liftA2 (<+>)
+
+instance Monoid m => Monoid (R a m) where
+  neutral = pure neutral
+
+instance Num n => Num (R a n) where
+  (+)         = liftA2 (+)
+  (-)         = liftA2 (-)
+  (*)         = liftA2 (*)
+  abs         = map abs
+  fromInteger = pure . fromInteger
+
+instance Neg n => Neg (R a n) where
+  negate = map negate
