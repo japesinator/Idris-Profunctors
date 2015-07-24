@@ -7,8 +7,11 @@ modules = Data.Profunctor
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
+        , Data.Profunctor.Fold
         , Data.Profunctor.Iso
         , Data.Profunctor.Lens
         , Data.Profunctor.Prism
         , Data.Profunctor.Trace
         , Data.Verified.Profunctor
+
+opts = "-p contrib"

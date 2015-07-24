@@ -16,7 +16,7 @@ Simple t s a = t s s a a
 preIso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
 preIso {p} s t a b = p a b -> p s t
 
-||| An isomorphism family. A less strong `Prism` or `Lens`
+||| An isomorphism family.
 Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
 Iso {p} = preIso {p}
 
@@ -44,8 +44,11 @@ flipped = iso flip flip
 curried : Iso {p=Arr} ((a, b) -> c) ((d, e) -> f) (a -> b -> c) (d -> e -> f)
 curried = iso curry uncurry
 
-uncurried : Iso {p=Arr} (a -> b -> c) (d -> e -> f) ((a, b )-> c) ((d, e )-> f)
+uncurried : Iso {p=Arr} (a -> b -> c) (d -> e -> f) ((a, b) -> c) ((d, e) -> f)
 uncurried = iso uncurry curry
 
 reversed : Iso {p=Arr} (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
+
+packed : Iso' {p=Arr} String (List Char)
+packed = iso unpack pack

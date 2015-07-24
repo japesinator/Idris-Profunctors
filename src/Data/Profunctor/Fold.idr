@@ -1,6 +1,7 @@
 module Data.Profunctor.Fold
 
 import Data.Profunctor
+import Data.SortedSet
 
 data L a b = MkL (r -> b) (r -> a -> r) r
 
@@ -43,6 +44,58 @@ instance Num n => Num (L a n) where
 instance Neg n => Neg (L a n) where
   negate = map negate
 
+length : L a Nat
+length = MkL id (const . S) Z
+
+null : L a Bool
+null = MkL id (const $ const False) True
+
+find : (a -> Bool) -> L a (Maybe a)
+find p = MkL id step Nothing where
+  step x a = case x of Nothing => if p a then Just a else Nothing
+                       _       => x
+
+index : Nat -> L a (Maybe a)
+index i = MkL done step (Left 0) where
+  step x = case x of Left j => if i == j then Right else const . Left $ S j
+                     _      => const x
+  done : Either Nat a -> Maybe a
+  done = either (const Nothing) Just
+
+nub : Eq a => L a (List a)
+nub = MkL (flip snd []) step ([], id) where
+  step : (List a, List a -> List a) -> a -> (List a, List a -> List a)
+  step (k, r) i = if elem i k then (k, r) else (i :: k, r . (i ::))
+
+fastNub : {a : Type} -> Ord a => L a (List a)
+fastNub {a} = MkL (flip snd $ the (List a) [])
+                  (\(s, r), a => if contains a s then (s, r)
+                                                 else (insert a s, r . (a ::)))
+                  (the (SortedSet a) empty, id)
+
+sort : Ord a => L a (List a)
+sort = MkL id ((. pure) . merge) [] where
+  merge : Ord a => List a -> List a -> List a
+  merge xs [] = xs
+  merge [] ys = ys
+  merge (x :: xs) (y :: ys) = if x < y then x :: merge xs (y :: ys)
+                                       else y :: merge (x :: xs) ys
+
+L1 : (a -> a -> a) -> L a (Lazy (Maybe a))
+L1 s = MkL Delay (\m => Just . case m of Just x => s x; _ => id) Nothing
+
+first : L a (Maybe a)
+first = map Force $ L1 const
+
+last : L a (Maybe a)
+last = map Force $ L1 $ flip const
+
+maximum : Ord a => L a (Maybe a)
+maximum = map Force $ L1 max
+
+minimum : Ord a => L a (Maybe a)
+minimum = map Force $ L1 min
+
 data R a b = MkR (r -> b) (a -> r -> r) r
 
 runR : Foldable t => R a b -> t a -> b
@@ -80,3 +133,9 @@ instance Num n => Num (R a n) where
 
 instance Neg n => Neg (R a n) where
   negate = map negate
+
+lr : L a b -> R a b
+lr (MkL r i n) = MkR r (flip i) n
+
+rl : R a b -> L a b
+rl (MkR r i n) = MkL r (flip i) n
