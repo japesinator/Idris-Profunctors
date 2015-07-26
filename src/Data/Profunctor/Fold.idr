@@ -1,5 +1,6 @@
 module Data.Profunctor.Fold
 
+import Control.Algebra
 import Data.Profunctor
 import Data.SortedSet
 
@@ -33,6 +34,19 @@ instance Semigroup m => Semigroup (L a m) where
 
 instance Monoid m => Monoid (L a m) where
   neutral = pure neutral
+
+instance Group m => Group (L a m) where
+  inverse = map inverse
+
+instance AbelianGroup m => AbelianGroup (L a m)
+
+instance Ring m => Ring (L a m) where
+  (<.>) = liftA2 (<.>)
+
+instance RingWithUnity m => RingWithUnity (L a m) where
+  unity = pure unity
+
+-- The `Field` instance won't type check, but it should exist
 
 instance Num n => Num (L a n) where
   (+)         = liftA2 (+)
@@ -88,7 +102,7 @@ first : L a (Maybe a)
 first = map Force $ L1 const
 
 last : L a (Maybe a)
-last = map Force $ L1 $ flip const
+last = map Force . L1 $ flip const
 
 maximum : Ord a => L a (Maybe a)
 maximum = map Force $ L1 max
@@ -133,6 +147,17 @@ instance Num n => Num (R a n) where
 
 instance Neg n => Neg (R a n) where
   negate = map negate
+
+instance Group m => Group (R a m) where
+  inverse = map inverse
+
+instance AbelianGroup m => AbelianGroup (R a m)
+
+instance Ring m => Ring (R a m) where
+  (<.>) = liftA2 (<.>)
+
+instance RingWithUnity m => RingWithUnity (R a m) where
+  unity = pure unity
 
 lr : L a b -> R a b
 lr (MkL r i n) = MkR r (flip i) n
