@@ -18,7 +18,7 @@ instance Profunctor L where
   lmap  f   (MkL k h z) = MkL k       ((. f) . h) z
 
 instance Functor (L a) where
-  map f (MkL k h z) = MkL (f . k) h z
+  map = rmap
 
 instance Applicative (L a) where
   pure b = MkL (const b) (const $ const ()) ()
@@ -88,7 +88,7 @@ fastNub {a} = MkL (flip snd $ the (List a) [])
                   (the (SortedSet a) empty, id)
 
 sort : Ord a => L a (List a)
-sort = MkL id ((. pure) . merge) [] where
+sort = MkL id (flip $ merge . pure) [] where
   merge : Ord a => List a -> List a -> List a
   merge xs [] = xs
   merge [] ys = ys
