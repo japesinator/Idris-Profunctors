@@ -121,7 +121,7 @@ instance Profunctor R where
   lmap  f   (MkR k h z) = MkR k       (h . f) z
 
 instance Functor (R a) where
-  map f (MkR k h z) = MkR (f . k) h z
+  map = rmap
 
 instance Applicative (R a) where
   pure b = MkR (const b) (const $ const ()) ()

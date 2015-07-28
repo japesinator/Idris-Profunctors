@@ -149,8 +149,8 @@ instance Arrow p => Arrow (WrappedArrow p) where
   (WrapArrow a) &&& (WrapArrow b) = WrapArrow $ a &&& b
 
 instance Arrow p => Profunctor (WrappedArrow p) where
-  lmap f a = arrow f >>> a
-  rmap g a = arrow g .   a
+  lmap = (>>>) . arrow
+  rmap = (.)   . arrow
 
 -- }}}
 -- Forget
