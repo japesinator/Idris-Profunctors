@@ -7,11 +7,6 @@ import Data.Profunctor
 import Data.Profunctor.Iso
 import Data.Vect
 
-infixl 1 &
-
-(&) : a -> (a -> b) -> b
-a & f = f a
-
 ||| A `Strong` `Profunctor` that can be used in a `Lens`
 class Strong p => Lensing (p : Type -> Type -> Type) where
   strength : p a b -> p (b -> t, a) t
@@ -41,6 +36,9 @@ lens f = lmap f . strength
 ||| A two-argument version of `lens` for compatibility with other libraries
 lens' : Lensing p => (s -> a) -> (s -> b -> t) -> Lens {p} s t (a, s) (b, s)
 lens' = lensIso
+
+fromIso : Lensing p => Iso {p} s t a b -> Lens {p} s t a b
+fromIso = id
 
 ||| Build a function to look at stuff from a Lens
 view : Lens {p=Forgotten a} s t a b -> s -> a

@@ -2,6 +2,11 @@ module Data.Profunctor.Iso
 
 import Data.Profunctor
 
+infixl 1 &
+
+(&) : a -> (a -> b) -> b
+a & f = f a
+
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
 |||
@@ -38,16 +43,19 @@ prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
 prismIso = flip iso . either id . Delay
 
-flipped : Iso {p=Arr} (a -> b -> c) (d -> e -> f) (b -> a -> c) (e -> d -> f)
+flipped : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
+                                  (b -> a -> c) (e -> d -> f)
 flipped = iso flip flip
 
-curried : Iso {p=Arr} ((a, b) -> c) ((d, e) -> f) (a -> b -> c) (d -> e -> f)
+curried : Profunctor p => Iso {p} ((a, b) -> c) ((d, e) -> f)
+                                  (a -> b -> c) (d -> e -> f)
 curried = iso curry uncurry
 
-uncurried : Iso {p=Arr} (a -> b -> c) (d -> e -> f) ((a, b) -> c) ((d, e) -> f)
+uncurried : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
+                                    ((a, b) -> c) ((d, e) -> f)
 uncurried = iso uncurry curry
 
-reversed : Iso {p=Arr} (List a) (List b) (List a) (List b)
+reversed : Profunctor p => Iso {p} (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
 
 packed : Iso' {p=Arr} String (List Char)
