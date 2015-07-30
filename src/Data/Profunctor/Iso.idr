@@ -58,5 +58,8 @@ uncurried = iso uncurry curry
 reversed : Profunctor p => Iso {p} (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
 
-packed : Iso' {p=Arr} String (List Char)
+packed : Profunctor p => Iso' {p} String (List Char)
 packed = iso unpack pack
+
+unpacked : Profunctor p => Iso' {p} (List Char) String
+unpacked = iso pack unpack
