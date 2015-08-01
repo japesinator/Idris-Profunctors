@@ -37,6 +37,7 @@ lens f = lmap f . strength
 lens' : Lensing p => (s -> a) -> (s -> b -> t) -> Lens {p} s t (a, s) (b, s)
 lens' = lensIso
 
+||| Turn an `Iso` into a `Lens`. You should never need to use this.
 fromIso : Lensing p => Iso {p} s t a b -> Lens {p} s t a b
 fromIso = id
 

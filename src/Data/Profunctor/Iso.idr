@@ -43,23 +43,29 @@ prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
 prismIso = flip iso . either id . Delay
 
+||| An `Iso` between a function and it's arguments-flipped version
 flipped : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
                                   (b -> a -> c) (e -> d -> f)
 flipped = iso flip flip
 
+||| An `Iso` between a function and it's curried version
 curried : Profunctor p => Iso {p} ((a, b) -> c) ((d, e) -> f)
                                   (a -> b -> c) (d -> e -> f)
 curried = iso curry uncurry
 
+||| An `Iso` between a function and it's uncurried version
 uncurried : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
                                     ((a, b) -> c) ((d, e) -> f)
 uncurried = iso uncurry curry
 
+||| An `Iso` between a list and its reverse
 reversed : Profunctor p => Iso {p} (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
 
+||| An `Iso` between a string and a list of its characters
 packed : Profunctor p => Iso' {p} String (List Char)
 packed = iso unpack pack
 
+||| An `Iso` between a list of characters and its string
 unpacked : Profunctor p => Iso' {p} (List Char) String
 unpacked = iso pack unpack
