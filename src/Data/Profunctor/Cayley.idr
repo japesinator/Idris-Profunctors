@@ -55,4 +55,4 @@ instance (Applicative f, ArrowZero p) => ArrowZero (Cayleyed f p) where
   zeroArrow = Cayley $ pure zeroArrow
 
 instance (Applicative f, ArrowPlus p) => ArrowPlus (Cayleyed f p) where
-  (Cayley f) <++> (Cayley g) = Cayley (liftA2 (<++>) f g)
+  (Cayley f) <++> (Cayley g) = Cayley $ liftA2 (<++>) f g
