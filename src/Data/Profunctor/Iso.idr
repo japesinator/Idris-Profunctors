@@ -69,3 +69,11 @@ packed = iso unpack pack
 ||| An `Iso` between a list of characters and its string
 unpacked : Profunctor p => Iso' {p} (List Char) String
 unpacked = iso pack unpack
+
+||| An `Iso` between a lazy variable and its strict form
+motivated : Profunctor p => Iso' {p} a (Lazy a)
+motivated = iso Delay Force
+
+||| An `Iso` between a strict variable and its lazy form
+unmotivated : Profunctor p => Iso' {p} (Lazy a) a
+unmotivated = iso Force Delay
