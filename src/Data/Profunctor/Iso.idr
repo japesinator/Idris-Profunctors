@@ -31,7 +31,7 @@ Iso' {p} = Simple $ Iso {p}
 
 ||| Turns a coavariant and contravariant function into an `Iso`
 iso : Profunctor p => (s -> a) -> (b -> t) -> Iso {p} s t a b
-iso f g = dimap f g -- Eta reduction further breaks this?
+iso = dimap
 
 ||| Builds an `Iso` useful for constructing a `Lens`
 lensIso : Profunctor p =>
@@ -71,9 +71,17 @@ unpacked : Profunctor p => Iso' {p} (List Char) String
 unpacked = iso pack unpack
 
 ||| An `Iso` between a lazy variable and its strict form
-motivated : Profunctor p => Iso' {p} a (Lazy a)
+motivated : Profunctor p => Iso {p} a b (Lazy a) (Lazy b)
 motivated = iso Delay Force
 
 ||| An `Iso` between a strict variable and its lazy form
-unmotivated : Profunctor p => Iso' {p} (Lazy a) a
+unmotivated : Profunctor p => Iso {p} (Lazy a) (Lazy b) a b
 unmotivated = iso Force Delay
+
+||| An `Iso` between an enumerable value and it's `Nat` representation
+enum : (Profunctor p, Enum a) => Iso' {p} Nat a
+enum = iso fromNat toNat
+
+||| An `Iso` between a `Nat` and its enumerable representation
+denum : (Profunctor p, Enum a) => Iso' {p} a Nat
+denum = iso toNat fromNat
