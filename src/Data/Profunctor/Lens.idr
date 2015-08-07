@@ -33,10 +33,6 @@ Lens' {p} = Simple $ Lens {p}
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
 lens f = lmap f . strength
 
-||| A two-argument version of `lens` for compatibility with other libraries
-lens' : Lensing p => (s -> a) -> (s -> b -> t) -> Lens {p} s t (a, s) (b, s)
-lens' = lensIso
-
 ||| Turn an `Iso` into a `Lens`. You should never need to use this.
 fromIso : Lensing p => Iso {p} s t a b -> Lens {p} s t a b
 fromIso = id
@@ -122,13 +118,16 @@ _vNth : Lensing p => {m : Nat} -> (n : Fin (S m)) ->
 _vNth n = lens $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
 
 ||| A Lens for the nth element of a big-enough heterogenous vector
-_hVNth : Lensing p => {l : Nat} -> (i : Fin (S l)) ->
-                      Lens {p} (HVect us) (HVect vs)
-                               (index i us, HVect (deleteAt i us))
-                               (index i vs, HVect (deleteAt i vs))
+_hVNth : Lensing p => (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
+                                              (index i us, HVect (deleteAt i us))
+                                              (index i vs, HVect (deleteAt i vs))
 _hVNth n = lens $ \v =>
            (believe_me . uncurry (insertAt' n), (index n v, deleteAt n v)) where
   insertAt' : (i : Fin (S l)) -> a -> HVect us -> HVect (insertAt i a us)
   insertAt' FZ     y xs      = y :: xs
   insertAt' (FS k) y (x::xs) = x :: insertAt' k y xs
   insertAt' (FS k) y []      = absurd k
+
+||| Everything has a `()` in it
+devoid : Lensing p => Lens' {p} a ()
+devoid = lens $ flip MkPair () . const
