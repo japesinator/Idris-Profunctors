@@ -38,12 +38,12 @@ fromIso : Lensing p => Iso {p} s t a b -> Lens {p} s t a b
 fromIso = id
 
 ||| Build a function to look at stuff from a Lens
-view : Lens {p=Forgotten a} s t a b -> s -> a
+view : Lens {p=Forgotten a} s _ a _ -> s -> a
 view = runForget . (\f => f $ Forget id)
 
 infixl 8 ^.
 ||| Infix synonym for `view`
-(^.) : Lens {p=Forgotten a} s t a b -> s -> a
+(^.) : Lens {p=Forgotten a} s _ a _ -> s -> a
 (^.) = view
 
 ||| Build a function to `map` from a Lens
@@ -56,12 +56,12 @@ infixr 4 &~
 (&~) = over
 
 ||| Set something to a specific value with a Lens
-set : Lens {p=Arr} s t a b -> b -> s -> t
+set : Lens {p=Arr} s t _ b -> b -> s -> t
 set = (. const) . over
 
 infixr 4 .~
 ||| Infix synonym for `set`
-(.~) : Lens {p=Arr} s t a b -> b -> s -> t
+(.~) : Lens {p=Arr} s t _ b -> b -> s -> t
 (.~) = set
 
 infixr 4 +~
