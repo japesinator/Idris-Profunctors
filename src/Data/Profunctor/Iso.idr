@@ -43,6 +43,20 @@ prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
 prismIso = flip iso . either id . Delay
 
+record Const a b where
+  constructor MkConst
+  getConst : a
+
+record Identity a where
+  constructor Id
+  runIdentity : a
+
+forwards : Profunctor p => Iso {p=Forgotten a} s t a b -> s -> a
+forwards i = runForget . i $ Forget id
+
+backwards : Profunctor p => Iso {p=Tagged} s t a b -> b -> t
+backwards = (runTagged .) . (. Tag)
+
 ||| An `Iso` between a function and it's arguments-flipped version
 flipped : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
                                   (b -> a -> c) (e -> d -> f)
