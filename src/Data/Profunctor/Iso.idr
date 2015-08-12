@@ -51,10 +51,12 @@ record Identity a where
   constructor Id
   runIdentity : a
 
-forwards : Profunctor p => Iso {p=Forgotten a} s t a b -> s -> a
+||| Convert an element of the first half of an iso to the second
+forwards : Profunctor p => Iso {p=Forgotten a} s _ a _ -> s -> a
 forwards i = runForget . i $ Forget id
 
-backwards : Profunctor p => Iso {p=Tagged} s t a b -> b -> t
+||| Convert an element of the second half of an iso to the first
+backwards : Profunctor p => Iso {p=Tagged} _ t _ b -> b -> t
 backwards = (runTagged .) . (. Tag)
 
 ||| An `Iso` between a function and it's arguments-flipped version
