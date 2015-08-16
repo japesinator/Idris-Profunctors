@@ -235,7 +235,7 @@ class Profunctor p => Choice (p : Type -> Type -> Type) where
   ||| ````
   |||
   left' : p a b -> p (Either a c) (Either b c)
-  left' = dimap (either Right Left) (either Right Left) . right'
+  left' = dimap mirror mirror . right'
 
   ||| Like second' but with sum rather than product types
   |||
@@ -244,7 +244,7 @@ class Profunctor p => Choice (p : Type -> Type -> Type) where
   ||| ````
   |||
   right' : p a b -> p (Either c a) (Either c b)
-  right' = dimap (either Right Left) (either Right Left) . left'
+  right' = dimap mirror mirror . left'
 
 instance Monad m => Choice (Kleislimorphism m) where
   left'  f = Kleisli $ either (applyKleisli $ f        >>> arrow Left)
@@ -265,7 +265,7 @@ instance Applicative f => Choice (UpStarred f) where
   right' (UpStar f) = UpStar $ either (map Left . pure) (map Right . f   )
 
 instance Monoid r => Choice (Forgotten r) where
-  left'  (Forget k) = Forget $ either k (const neutral)
-  right' (Forget k) = Forget $ either (const neutral) k
+  left'  (Forget k) = Forget .      either k $ const neutral
+  right' (Forget k) = Forget . flip either k $ const neutral
 
 -- }}}
