@@ -33,10 +33,6 @@ Lens' {p} = Simple $ Lens {p}
 lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
 lens f = lmap f . strength
 
-||| Turn an `Iso` into a `Lens`. You should never need to use this.
-fromIso : Lensing p => Iso {p} s t a b -> Lens {p} s t a b
-fromIso = id
-
 ||| Build a function to look at stuff from a Lens
 view : Lens {p=Forgotten a} s _ a _ -> s -> a
 view = runForget . (\f => f $ Forget id)

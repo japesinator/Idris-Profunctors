@@ -16,6 +16,11 @@ unfoldL f = MkL (fst . f) (snd . f)
 runL : Foldable t => L a b -> t a -> b
 runL (MkL r i n) = r . foldl i n
 
+scanL : L a b -> List a -> List b
+scanL (MkL r i n) l = case l of
+                           []      => []
+                           (x::xs) => r (i n x) :: scanL (MkL r i (i n x)) xs
+
 instance Profunctor L where
   dimap f g (MkL k h z) = MkL (g . k) ((. f) . h) z
   rmap    g (MkL k h z) = MkL (g . k) h           z
