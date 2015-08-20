@@ -43,23 +43,13 @@ prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
                            Iso {p} s t (Either t a) (Either t b)
 prismIso = flip iso . either id . Delay
 
-specialize : Profunctor q => ({p : _} -> Profunctor p => p a b -> p s t) -> q a b -> q s t
-specialize f x = f x
-
 ||| Convert an element of the first half of an iso to the second
-forwards : Profunctor p => Iso {p} s t a b -> s -> a
-forwards {a} {b} {s} {t} i = runForget . fi $ Forget id where
-  fi : Forgotten a a b -> Forgotten a s t
-  fi = specialize i
+forwards : Profunctor p => Iso {p=Forgotten a} s t a b -> s -> a
+forwards i = runForget . i $ Forget id
 
 ||| Convert an element of the second half of an iso to the first
-backwards : Profunctor p => Iso {p} s t a b -> b -> t
-backwards {a} {b} {s} {t} i = runTagged . bi . Tag where
-  bi : Tagged a b -> Tagged s t
-  bi = specialize i
-
-from : Profunctor p => Iso {p} s t a b -> Iso {p} s t a b
-from i = iso (forwards i) (backwards i)
+backwards : Profunctor p => Iso {p=Tagged} s t a b -> b -> t
+backwards i = runTagged . i . Tag
 
 ||| An `Iso` between a function and it's arguments-flipped version
 flipped : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
