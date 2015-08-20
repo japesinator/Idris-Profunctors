@@ -93,3 +93,7 @@ enum = iso fromNat toNat
 ||| An `Iso` between a `Nat` and its enumerable representation
 denum : (Profunctor p, Enum a) => Iso' {p} a Nat
 denum = iso toNat fromNat
+
+mirrored : Profunctor p => Iso {p} (Either a b) (Either c d)
+                                   (Either b a) (Either d c)
+mirrored = iso mirror mirror
