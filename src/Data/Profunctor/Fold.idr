@@ -16,6 +16,7 @@ unfoldL f = MkL (fst . f) (snd . f)
 runL : Foldable t => L a b -> t a -> b
 runL (MkL r i n) = r . foldl i n
 
+||| Run an `L` on a `Foldable` container, accumulating results
 scanL : L a b -> List a -> List b
 scanL (MkL r _ n) []      = pure $ r n
 scanL (MkL r i n) (x::xs) = r (i n x) :: scanL (MkL r i (i n x)) xs
@@ -154,6 +155,7 @@ data R a b = MkR (r -> b) (a -> r -> r) r
 runR : Foldable t => R a b -> t a -> b
 runR (MkR r i n) = r . foldr i n
 
+||| Run an `R` on a `Foldable` container, accumulating results
 scanR : R a b -> List a -> List b
 scanR (MkR r i n) = map r . scan' where
   scan' []      = pure n
