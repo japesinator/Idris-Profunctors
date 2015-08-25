@@ -14,12 +14,12 @@ unfoldL f = MkL (fst . f) (snd . f)
 
 ||| Run an `L` on a `Foldable` container
 runL : Foldable t => L a b -> t a -> b
-runL (MkL r i n) = r . foldl i n
+runL (MkL k h z) = k . foldl h z
 
 ||| Run an `L` on a `Foldable` container, accumulating results
 scanL : L a b -> List a -> List b
-scanL (MkL r _ n) []      = pure $ r n
-scanL (MkL r i n) (x::xs) = r (i n x) :: scanL (MkL r i (i n x)) xs
+scanL (MkL k _ z) []      = pure $ k z
+scanL (MkL k h z) (x::xs) = k (h z x) :: scanL (MkL k h (h z x)) xs
 
 instance Profunctor L where
   dimap f g (MkL k h z) = MkL (g . k) ((. f) . h) z
@@ -153,13 +153,13 @@ data R a b = MkR (r -> b) (a -> r -> r) r
 
 ||| Run an `R` on a `Foldable` container
 runR : Foldable t => R a b -> t a -> b
-runR (MkR r i n) = r . foldr i n
+runR (MkR k h z) = k . foldr h z
 
 ||| Run an `R` on a `Foldable` container, accumulating results
 scanR : R a b -> List a -> List b
-scanR (MkR r i n) = map r . scan' where
-  scan' []      = pure n
-  scan' (x::xs) = let l = scan' xs in i x (case l of [] => n; (q::_) => q) :: l
+scanR (MkR k h z) = map k . scan' where
+  scan' []      = pure z
+  scan' (x::xs) = let l = scan' xs in h x (case l of [] => z; (q::_) => q) :: l
 
 instance Profunctor R where
   dimap f g (MkR k h z) = MkR (g . k) (h . f) z
@@ -207,8 +207,8 @@ instance RingWithUnity m => RingWithUnity (R a m) where
 
 ||| Convert an `L` to an `R`
 lr : L a b -> R a b
-lr (MkL r i n) = MkR r (flip i) n
+lr (MkL k h z) = MkR k (flip h) z
 
 ||| Convert an `R` to an `L`
 rl : R a b -> L a b
-rl (MkR r i n) = MkL r (flip i) n
+rl (MkR k h z) = MkL k (flip h) z
