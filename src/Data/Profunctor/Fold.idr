@@ -184,6 +184,24 @@ instance Profunctor R where
   rmap    g (MkR k h z) = MkR (g . k) h       z
   lmap  f   (MkR k h z) = MkR k       (h . f) z
 
+instance Choice R where
+  left' (MkR {r} k h z) = MkR (\e => case e of Left a  => Left $ k a
+                                               Right b => Right b)
+                              step
+                              (Left z) where
+    step : Either a c -> Either r c -> Either r c
+    step (Left x)  (Left y)  = Left $ h x y
+    step (Right c) _         = Right c
+    step _         (Right c) = Right c
+  right' (MkR {r} k h z) = MkR (\e => case e of Right a => Right $ k a
+                                                Left b  => Left b)
+                               step
+                               (Right z) where
+    step : Either c a -> Either c r -> Either c r
+    step (Right x) (Right y) = Right $ h x y
+    step (Left c)  _         = Left c
+    step _         (Left c)  = Left c
+
 instance Functor (R a) where
   map = rmap
 
