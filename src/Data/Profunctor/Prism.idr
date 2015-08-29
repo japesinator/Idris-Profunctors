@@ -12,10 +12,10 @@ instance Prisming Arr where
   costrength = MkArr . either id . Delay . runArr
 
 instance Monoid r => Prisming (Forgotten r) where
-  costrength p = Forget $ either (const neutral) $ runForget p
+  costrength p = Forget . either (const neutral) $ runForget p
 
 instance Applicative f => Prisming (UpStarred f) where
-  costrength p = UpStar $ either pure $ runUpStar p
+  costrength p = UpStar . either pure $ runUpStar p
 
 instance Prisming Tagged where
   costrength = Tag . runTagged

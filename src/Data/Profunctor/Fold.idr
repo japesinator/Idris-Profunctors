@@ -2,6 +2,7 @@ module Data.Profunctor.Fold
 
 import Control.Algebra
 import Data.Profunctor
+import Data.Profunctor.Prism
 import Data.SortedSet
 
 ||| A leftwards fold
@@ -43,6 +44,9 @@ instance Choice L where
     step (Right x) (Right y) = Right $ h x y
     step (Left c)  _         = Left c
     step _         (Left c)  = Left c
+
+instance Prisming L where
+  costrength = rmap (either id id) . right'
 
 instance Functor (L a) where
   map = rmap
@@ -201,6 +205,9 @@ instance Choice R where
     step (Right x) (Right y) = Right $ h x y
     step (Left c)  _         = Left c
     step _         (Left c)  = Left c
+
+instance Prisming R where
+  costrength = rmap (either id id) . right'
 
 instance Functor (R a) where
   map = rmap
