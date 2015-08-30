@@ -9,9 +9,17 @@ class Functor w => Comonad (w : Type -> Type) where
   extend : (w a -> b) -> w a -> w b
   extend f = map f . duplicate
 
-instance Functor (Tagged a) where
-  map f = Tag . f . runTagged
-
 instance Comonad (Tagged a) where
   duplicate = Tag
   extract = runTagged
+
+infixr 1 =>>
+(=>>) : Comonad w => w a -> (w a -> b) -> w b
+(=>>) = flip extend
+
+infixl 1 <<=
+(<<=) : Comonad w => (w a -> b) -> w a -> w b
+(<<=) = extend
+
+wfix : Comonad w => w (w a -> a) -> a
+wfix w = extract w $ w =>> wfix

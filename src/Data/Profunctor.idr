@@ -61,6 +61,9 @@ instance Arrow Arr where
 instance Profunctor Arr where
   dimap f g (MkArr h) = MkArr $ g . h . f
 
+instance Functor (Arr a) where
+  map = rmap
+
 ||| A method of attaching a phantom type as a "tag"
 record Tagged a b where
   constructor Tag
@@ -69,6 +72,9 @@ record Tagged a b where
 instance Profunctor Tagged where
   lmap   = const $ Tag . runTagged
   rmap f = Tag . f . runTagged
+
+instance Functor (Tagged a) where
+  map = rmap
 
 -- UpStar
 -- {{{
