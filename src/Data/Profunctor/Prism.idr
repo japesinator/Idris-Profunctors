@@ -3,21 +3,23 @@ module Data.Profunctor.Prism
 import Data.Profunctor
 import Data.Profunctor.Iso
 
+%access public export
+
 ||| A `Choice` `Profunctor` that can be used in a `Prism`
-class Choice p => Prisming (p : Type -> Type -> Type) where
+interface Choice p => Prisming (p : Type -> Type -> Type) where
   costrength : p a b -> p (Either b a) b
   costrength = rmap (either id id) . right'
 
-instance Prisming Arr where
+implementation Prisming Arr where
   costrength = MkArr . either id . Delay . runArr
 
-instance Monoid r => Prisming (Forgotten r) where
+implementation Monoid r => Prisming (Forgotten r) where
   costrength p = Forget . either (const neutral) $ runForget p
 
-instance Applicative f => Prisming (UpStarred f) where
+implementation Applicative f => Prisming (UpStarred f) where
   costrength p = UpStar . either pure $ runUpStar p
 
-instance Prisming Tagged where
+implementation Prisming Tagged where
   costrength = Tag . runTagged
 
 ||| A `Lens` for sum types instead of product types
@@ -39,11 +41,11 @@ record First a where
   constructor MkFirst
   runFirst : Maybe a
 
-instance Semigroup (First a) where
+implementation Semigroup (First a) where
   (MkFirst Nothing) <+> r = r
   l                 <+> _ = l
 
-instance Monoid (First a) where
+implementation Monoid (First a) where
   neutral = MkFirst Nothing
 
 ||| Build a function from a `Prism` to look at stuff

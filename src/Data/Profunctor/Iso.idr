@@ -2,6 +2,8 @@ module Data.Profunctor.Iso
 
 import Data.Profunctor
 
+%access public export
+
 infixl 1 &
 
 (&) : a -> (a -> b) -> b

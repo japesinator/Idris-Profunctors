@@ -4,7 +4,9 @@ import Control.Arrow
 import Control.Category
 import Data.Profunctor
 
-class Functor w => Comonad (w : Type -> Type) where
+%access public export
+
+interface Functor w => Comonad (w : Type -> Type) where
   extract : w a -> a
 
   duplicate : w a -> w (w a)
@@ -13,7 +15,7 @@ class Functor w => Comonad (w : Type -> Type) where
   extend : (w a -> b) -> w a -> w b
   extend f = map f . duplicate
 
-instance Comonad (Tagged a) where
+implementation Comonad (Tagged a) where
   duplicate = Tag
   extract = runTagged
 
@@ -40,19 +42,19 @@ record Cokleislimorphism (w : Type -> Type) a b where
   constructor Cokleisli
   runCokleisli : w a -> b
 
-instance Functor w => Profunctor (Cokleislimorphism w) where
+implementation Functor w => Profunctor (Cokleislimorphism w) where
   dimap f g (Cokleisli h) = Cokleisli $ g . h . map f
 
-instance Comonad w => Category (Cokleislimorphism w) where
+implementation Comonad w => Category (Cokleislimorphism w) where
   id = Cokleisli extract
   (Cokleisli f) . (Cokleisli g) = Cokleisli $ f =<= g
 
-instance Functor (Cokleislimorphism w a) where
+implementation Functor (Cokleislimorphism w a) where
   map f (Cokleisli g) = Cokleisli $ f . g
 
-instance Applicative (Cokleislimorphism w a) where
+implementation Applicative (Cokleislimorphism w a) where
   pure = Cokleisli . const
   (Cokleisli f) <*> (Cokleisli a) = Cokleisli $ \w => f w $ a w
 
-instance Monad (Cokleislimorphism w a) where
+implementation Monad (Cokleislimorphism w a) where
   (Cokleisli k) >>= f = Cokleisli $ \w => runCokleisli (f $ k w) w

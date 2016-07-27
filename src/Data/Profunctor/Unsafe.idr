@@ -3,10 +3,12 @@ module Data.Profunctor.Unsafe
 import Data.Morphisms
 import Data.Profunctor
 
+%access public export
+
 infixr 9 #.
 infixl 8 .#
 
-class Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
+interface Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
   ||| Map the second argument of a Profunctor covariantly with a function
   ||| which is assumed to be a cast
   (#.) : (b -> c) -> p a b -> p a c
@@ -17,13 +19,13 @@ class Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
   (.#) : p b c -> (a -> b) -> p a c
   (.#) = flip lmap
 
-instance UnsafeProfunctor Arr where
+implementation UnsafeProfunctor Arr where
   (#.) = const believe_me
   (.#) = const . believe_me
 
-instance Monad m => UnsafeProfunctor (Kleislimorphism m) where
+implementation Monad m => UnsafeProfunctor (Kleislimorphism m) where
   (.#) = const . believe_me
 
-instance UnsafeProfunctor Tagged where
+implementation UnsafeProfunctor Tagged where
   (#.) = const believe_me
   (.#) = const . Tag . runTagged

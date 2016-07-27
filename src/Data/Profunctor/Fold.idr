@@ -5,6 +5,8 @@ import Data.Profunctor
 import Data.Profunctor.Prism
 import Data.SortedSet
 
+%access public export
+
 ||| A leftwards fold
 data L a b = MkL (r -> b) (r -> a -> r) r
 
@@ -22,12 +24,12 @@ scanL : L a b -> List a -> List b
 scanL (MkL k _ z) []      = pure $ k z
 scanL (MkL k h z) (x::xs) = k (h z x) :: scanL (MkL k h (h z x)) xs
 
-instance Profunctor L where
+implementation Profunctor L where
   dimap f g (MkL k h z) = MkL (g . k) ((. f) . h) z
   rmap    g (MkL k h z) = MkL (g . k) h           z
   lmap  f   (MkL k h z) = MkL k       ((. f) . h) z
 
-instance Choice L where
+implementation Choice L where
   left' (MkL {r} k h z) = MkL (\e => case e of Left a  => Left $ k a
                                                Right b => Right b)
                               step
@@ -45,48 +47,48 @@ instance Choice L where
     step (Left c)  _         = Left c
     step _         (Left c)  = Left c
 
-instance Prisming L where
+implementation Prisming L where
   costrength = rmap (either id id) . right'
 
-instance Functor (L a) where
+implementation Functor (L a) where
   map = rmap
 
-instance Applicative (L a) where
+implementation Applicative (L a) where
   pure b = MkL (const b) (const $ const ()) ()
   (MkL f u y) <*> (MkL a v z) = MkL (uncurry $ (. a) . f)
                                     (\(x, y), b => (u x b, v y b))
                                     (y, z)
 
-instance Monad (L a) where
+implementation Monad (L a) where
   m >>= f = MkL ((. f) . flip runL) ((. pure) . (++)) [] <*> m
 
-instance Semigroup m => Semigroup (L a m) where
+implementation Semigroup m => Semigroup (L a m) where
   (<+>) = liftA2 (<+>)
 
-instance Monoid m => Monoid (L a m) where
+implementation Monoid m => Monoid (L a m) where
   neutral = pure neutral
 
-instance Group m => Group (L a m) where
+implementation Group m => Group (L a m) where
   inverse = map inverse
 
-instance AbelianGroup m => AbelianGroup (L a m)
+implementation AbelianGroup m => AbelianGroup (L a m) where
 
-instance Ring m => Ring (L a m) where
+implementation Ring m => Ring (L a m) where
   (<.>) = liftA2 (<.>)
 
-instance RingWithUnity m => RingWithUnity (L a m) where
+implementation RingWithUnity m => RingWithUnity (L a m) where
   unity = pure unity
 
--- The `Field` instance won't type check, but it should exist
+-- The `Field` implementation won't type check, but it should exist
 
-instance Num n => Num (L a n) where
+implementation Num n => Num (L a n) where
   (+)         = liftA2 (+)
-  (-)         = liftA2 (-)
   (*)         = liftA2 (*)
-  abs         = map abs
   fromInteger = pure . fromInteger
 
-instance Neg n => Neg (L a n) where
+implementation Neg n => Neg (L a n) where
+  (-)         = liftA2 (-)
+  abs         = map abs
   negate = map negate
 
 ||| An `L` to calculate the size of a `Foldable` container
@@ -183,12 +185,12 @@ scanR (MkR k h z) = map k . scan' where
   scan' []      = pure z
   scan' (x::xs) = let l = scan' xs in h x (case l of [] => z; (q::_) => q) :: l
 
-instance Profunctor R where
+implementation Profunctor R where
   dimap f g (MkR k h z) = MkR (g . k) (h . f) z
   rmap    g (MkR k h z) = MkR (g . k) h       z
   lmap  f   (MkR k h z) = MkR k       (h . f) z
 
-instance Choice R where
+implementation Choice R where
   left' (MkR {r} k h z) = MkR (\e => case e of Left a  => Left $ k a
                                                Right b => Right b)
                               step
@@ -206,46 +208,46 @@ instance Choice R where
     step (Left c)  _         = Left c
     step _         (Left c)  = Left c
 
-instance Prisming R where
+implementation Prisming R where
   costrength = rmap (either id id) . right'
 
-instance Functor (R a) where
+implementation Functor (R a) where
   map = rmap
 
-instance Applicative (R a) where
+implementation Applicative (R a) where
   pure b = MkR (const b) (const $ const ()) ()
   (MkR f u y) <*> (MkR a v z) = MkR (uncurry $ (. a) . f)
                                     (\b, (x, y) => (u b x, v b y))
                                     (y, z)
 
-instance Monad (R a) where
+implementation Monad (R a) where
   m >>= f = MkR ((. f) . flip runR) (::) [] <*> m
 
-instance Semigroup m => Semigroup (R a m) where
+implementation Semigroup m => Semigroup (R a m) where
   (<+>) = liftA2 (<+>)
 
-instance Monoid m => Monoid (R a m) where
+implementation Monoid m => Monoid (R a m) where
   neutral = pure neutral
 
-instance Num n => Num (R a n) where
+implementation Num n => Num (R a n) where
   (+)         = liftA2 (+)
-  (-)         = liftA2 (-)
   (*)         = liftA2 (*)
-  abs         = map abs
   fromInteger = pure . fromInteger
 
-instance Neg n => Neg (R a n) where
+implementation Neg n => Neg (R a n) where
+  (-)         = liftA2 (-)
+  abs         = map abs
   negate = map negate
 
-instance Group m => Group (R a m) where
+implementation Group m => Group (R a m) where
   inverse = map inverse
 
-instance AbelianGroup m => AbelianGroup (R a m)
+implementation AbelianGroup m => AbelianGroup (R a m) where
 
-instance Ring m => Ring (R a m) where
+implementation Ring m => Ring (R a m) where
   (<.>) = liftA2 (<.>)
 
-instance RingWithUnity m => RingWithUnity (R a m) where
+implementation RingWithUnity m => RingWithUnity (R a m) where
   unity = pure unity
 
 ||| Convert an `L` to an `R`
