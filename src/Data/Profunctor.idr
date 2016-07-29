@@ -4,9 +4,11 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 
+%access public export
+
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
-class Profunctor (p : Type -> Type -> Type) where
+interface Profunctor (p : Type -> Type -> Type) where
   ||| Map over both arguments
   |||
   ||| ````idris example
@@ -34,7 +36,7 @@ class Profunctor (p : Type -> Type -> Type) where
   rmap : (a -> b) -> p c a -> p c b
   rmap = dimap id
 
-instance Monad m => Profunctor (Kleislimorphism m) where
+implementation Monad m => Profunctor (Kleislimorphism m) where
   dimap f g (Kleisli h) = Kleisli $ liftA g . h . f
 
 ||| An injective (->)
@@ -47,21 +49,21 @@ record Arr a b where
   constructor MkArr
   runArr : (a -> b)
 
-instance Category Arr where
+implementation Category Arr where
   id  = assert_total id
   (.) = assert_total (.)
 
-instance Arrow Arr where
+implementation Arrow Arr where
   arrow                   = MkArr
   first                   = MkArr . (\f,(a,b) => (f a,b)) . runArr
   second                  = MkArr . (\f,(a,b) => (a,f b)) . runArr
   (MkArr f) *** (MkArr g) = MkArr $ \(a,b) => (f a, g b)
   (MkArr f) &&& (MkArr g) = MkArr $ \a => (f a, g a)
 
-instance Profunctor Arr where
+implementation Profunctor Arr where
   dimap f g (MkArr h) = MkArr $ g . h . f
 
-instance Functor (Arr a) where
+implementation Functor (Arr a) where
   map = rmap
 
 ||| A method of attaching a phantom type as a "tag"
@@ -69,11 +71,11 @@ record Tagged a b where
   constructor Tag
   runTagged : b
 
-instance Profunctor Tagged where
+implementation Profunctor Tagged where
   lmap   = const $ Tag . runTagged
   rmap f = Tag . f . runTagged
 
-instance Functor (Tagged a) where
+implementation Functor (Tagged a) where
   map = rmap
 
 -- UpStar
@@ -89,17 +91,17 @@ record UpStarred (f : Type -> Type) d c where
   constructor UpStar
   runUpStar : d -> f c
 
-instance Functor f => Profunctor (UpStarred f) where
+implementation Functor f => Profunctor (UpStarred f) where
   dimap ab cd (UpStar bfc) = UpStar $ map cd . bfc . ab
 
-instance Functor f => Functor (UpStarred f a) where
+implementation Functor f => Functor (UpStarred f a) where
   map = rmap
 
-instance Applicative f => Applicative (UpStarred f a) where
+implementation Applicative f => Applicative (UpStarred f a) where
   pure                        = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
-instance Monad f => Monad (UpStarred f a) where
+implementation Monad f => Monad (UpStarred f a) where
   (UpStar m) >>= f = UpStar $ \e => m e >>= flip runUpStar e . f
 
 -- }}}
@@ -116,17 +118,17 @@ record DownStarred (f : Type -> Type) d c where
   constructor DownStar
   runDownStar : f d -> c
 
-instance Functor f => Profunctor (DownStarred f) where
+implementation Functor f => Profunctor (DownStarred f) where
   dimap ab cd (DownStar fbc) = DownStar $ cd . fbc . map ab
 
-instance Functor (DownStarred f a) where
+implementation Functor (DownStarred f a) where
   map = (DownStar .) . (. runDownStar) . (.)
 
-instance Applicative (DownStarred f a) where
+implementation Applicative (DownStarred f a) where
   pure                            = DownStar . const
   (DownStar ff) <*> (DownStar fx) = DownStar $ \a => ff a $ fx a
 
-instance Monad (DownStarred f a) where
+implementation Monad (DownStarred f a) where
   (DownStar m) >>= f = DownStar $ \x => runDownStar (f $ m x) x
 
 -- }}}
@@ -143,18 +145,18 @@ record WrappedArrow (p : Type -> Type -> Type) a b where
   constructor WrapArrow
   unwrapArrow : p a b
 
-instance Category p => Category (WrappedArrow p) where
+implementation Category p => Category (WrappedArrow p) where
   (WrapArrow f) . (WrapArrow g) = WrapArrow $ f . g
   id                            = WrapArrow id
 
-instance Arrow p => Arrow (WrappedArrow p) where
+implementation Arrow p => Arrow (WrappedArrow p) where
   arrow                           = WrapArrow . arrow
   first                           = WrapArrow . first  . unwrapArrow
   second                          = WrapArrow . second . unwrapArrow
   (WrapArrow a) *** (WrapArrow b) = WrapArrow $ a *** b
   (WrapArrow a) &&& (WrapArrow b) = WrapArrow $ a &&& b
 
-instance Arrow p => Profunctor (WrappedArrow p) where
+implementation Arrow p => Profunctor (WrappedArrow p) where
   lmap = (>>>) . arrow
   rmap = (.)   . arrow
 
@@ -172,16 +174,16 @@ record Forgotten r a b where
   constructor Forget
   runForget : a -> r
 
-instance Profunctor (Forgotten r) where
+implementation Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
 
-instance Functor (Forgotten r a) where
+implementation Functor (Forgotten r a) where
   map = const $ Forget . runForget
 
-instance Foldable (Forgotten r a) where
+implementation Foldable (Forgotten r a) where
   foldr = const const
 
-instance Traversable (Forgotten r a) where
+implementation Traversable (Forgotten r a) where
   traverse = const $ pure . Forget . runForget
 
 -- }}}
@@ -189,7 +191,7 @@ instance Traversable (Forgotten r a) where
 -- {{{
 
 ||| Generalized UpStar of a Strong Functor
-class Profunctor p => Strong (p : Type -> Type -> Type) where
+interface Profunctor p => Strong (p : Type -> Type -> Type) where
   ||| Create a new Profunctor of tuples with first element from the original
   |||
   ||| ````idris example
@@ -208,23 +210,23 @@ class Profunctor p => Strong (p : Type -> Type -> Type) where
   second' : p a b -> p (c, a) (c, b)
   second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
 
-instance Monad m => Strong (Kleislimorphism m) where
+implementation Monad m => Strong (Kleislimorphism m) where
   first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => pure (b, snd ac)
   second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= pure . MkPair (fst ca)
 
-instance Strong Arr where
+implementation Strong Arr where
   first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
   second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
 
-instance Functor m => Strong (UpStarred m) where
+implementation Functor m => Strong (UpStarred m) where
   first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) . f $ fst ac
   second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  . f $ snd ca
 
-instance Arrow p => Strong (WrappedArrow p) where
+implementation Arrow p => Strong (WrappedArrow p) where
   first'  = WrapArrow . first  . unwrapArrow
   second' = WrapArrow . second . unwrapArrow
 
-instance Strong (Forgotten r) where
+implementation Strong (Forgotten r) where
   first'  (Forget k) = Forget $ k . fst
   second' (Forget k) = Forget $ k . snd
 
@@ -233,7 +235,7 @@ instance Strong (Forgotten r) where
 -- {{{
 
 ||| Generalized DownStar of a Costrong Functor
-class Profunctor p => Choice (p : Type -> Type -> Type) where
+interface Profunctor p => Choice (p : Type -> Type -> Type) where
   ||| Like first' but with sum rather than product types
   |||
   ||| ````idris example
@@ -252,25 +254,25 @@ class Profunctor p => Choice (p : Type -> Type -> Type) where
   right' : p a b -> p (Either c a) (Either c b)
   right' = dimap mirror mirror . left'
 
-instance Monad m => Choice (Kleislimorphism m) where
+implementation Monad m => Choice (Kleislimorphism m) where
   left'  f = Kleisli $ either (applyKleisli $ f        >>> arrow Left)
                               (applyKleisli $ arrow id >>> arrow Right)
   right' f = Kleisli $ either (applyKleisli $ arrow id >>> arrow Left)
                               (applyKleisli $ f        >>> arrow Right)
 
-instance Choice Arr where
+implementation Choice Arr where
   left'  (MkArr f) = MkArr $ either (Left . f) Right
   right' (MkArr f) = MkArr $ either Left (Right . f)
 
-instance Choice Tagged where
+implementation Choice Tagged where
   left'  = Tag . Left  . runTagged
   right' = Tag . Right . runTagged
 
-instance Applicative f => Choice (UpStarred f) where
+implementation Applicative f => Choice (UpStarred f) where
   left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
   right' (UpStar f) = UpStar $ either (map Left . pure) (map Right . f   )
 
-instance Monoid r => Choice (Forgotten r) where
+implementation Monoid r => Choice (Forgotten r) where
   left'  (Forget k) = Forget .      either k $ const neutral
   right' (Forget k) = Forget . flip either k $ const neutral
 

@@ -1,24 +1,25 @@
 module Data.Profunctor.Lens
 
 import Data.Fin
-import Data.Floats
 import Data.HVect
 import Data.Profunctor
 import Data.Profunctor.Iso
 import Data.Vect
 
+%access public export
+
 ||| A `Strong` `Profunctor` that can be used in a `Lens`
-class Strong p => Lensing (p : Type -> Type -> Type) where
+interface Strong p => Lensing (p : Type -> Type -> Type) where
   strength : p a b -> p (b -> t, a) t
   strength = (rmap $ uncurry id) . second'
 
-instance Lensing (Forgotten r) where
+implementation Lensing (Forgotten r) where
   strength (Forget ar) = Forget $ ar . snd
 
-instance Functor f => Lensing (UpStarred f) where
+implementation Functor f => Lensing (UpStarred f) where
   strength (UpStar f) = UpStar . uncurry $ (. f) . (<$>)
 
-instance Lensing Arr where
+implementation Lensing Arr where
   strength = MkArr . uncurry . flip (.) . runArr
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
@@ -67,7 +68,7 @@ infixr 4 +~
 
 infixr 4 -~
 ||| Decrement the target of a lens by a number
-(-~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(-~) : Neg a => Lens {p=Arr} s t a a -> a -> s -> t
 (-~) = (. (-)) . over
 
 infixr 4 *~
@@ -77,7 +78,7 @@ infixr 4 *~
 
 infixr 4 /~
 ||| Divide the target of a lens by a number
-(/~) : Lens {p=Arr} s t Float Float -> Float -> s -> t
+(/~) : Lens {p=Arr} s t Double Double -> Double -> s -> t
 (/~) = (. (/)) . over
 
 infixr 4 <+>~
