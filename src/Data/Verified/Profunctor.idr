@@ -7,7 +7,7 @@ import Data.Profunctor
 ||| Verified Profunctors
 ||| A Profunctor for which identity and composition laws are verified
 interface Profunctor p => VerifiedProfunctor (p : Type -> Type -> Type) where
-  profunctorIdentity : (x : p a b) -> dimap id id x = x
+  profunctorIdentity : {a : Type} -> {b : Type} -> (x : p a b) -> dimap Basics.id Basics.id x = x
   profunctorComposition : {a : Type} -> {b : Type} -> {c : Type} ->
                           {d : Type} -> {e : Type} -> {a' : Type} ->
                           (x : p a b) -> (f : c -> a) -> (g : d -> c) ->
