@@ -88,8 +88,11 @@ implementation Num n => Num (L a n) where
 
 implementation Neg n => Neg (L a n) where
   (-)         = liftA2 (-)
+  negate      = map negate
+
+implementation Abs n => Abs (L a n) where
   abs         = map abs
-  negate = map negate
+
 
 ||| An `L` to calculate the size of a `Foldable` container
 length : Num a => L _ a
@@ -236,8 +239,10 @@ implementation Num n => Num (R a n) where
 
 implementation Neg n => Neg (R a n) where
   (-)         = liftA2 (-)
+  negate      = map negate
+
+implementation Abs n => Abs (R a n) where
   abs         = map abs
-  negate = map negate
 
 implementation Group m => Group (R a m) where
   inverse = map inverse

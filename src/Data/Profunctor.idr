@@ -37,8 +37,8 @@ interface Profunctor (p : Type -> Type -> Type) where
   rmap = dimap id
 
 implementation Monad m => Profunctor (Kleislimorphism m) where
-  dimap f g (Kleisli h) = Kleisli $ liftA g . h . f
-
+  dimap f g (Kleisli h) = Kleisli $ \a => liftA g $ h $ f a
+  
 ||| An injective (->)
 |||
 ||| ````idris example
@@ -92,7 +92,7 @@ record UpStarred (f : Type -> Type) d c where
   runUpStar : d -> f c
 
 implementation Functor f => Profunctor (UpStarred f) where
-  dimap ab cd (UpStar bfc) = UpStar $ map cd . bfc . ab
+  dimap ab cd (UpStar bfc) = UpStar $ \a => map cd $ bfc $ ab a
 
 implementation Functor f => Functor (UpStarred f a) where
   map = rmap
