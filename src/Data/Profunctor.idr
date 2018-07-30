@@ -7,6 +7,17 @@ import Data.Morphisms
 
 %access public export
 
+record Const (a : Type) (b : Type) where
+  constructor MkConst
+  runConst : a
+
+Functor (Const m) where
+  map _ (MkConst v) = MkConst v
+
+Monoid m => Applicative (Const m) where
+  pure _ = MkConst neutral
+  (MkConst a) <*> (MkConst b) = MkConst (a <+> b)
+
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
 interface Profunctor (p : Type -> Type -> Type) where
@@ -277,7 +288,6 @@ implementation Monoid r => Choice (Forgotten r) where
   left'  (Forget k) = Forget .      either k $ const neutral
   right' (Forget k) = Forget . flip either k $ const neutral
 
-
 ||| Profunctors that support polymorphic traversals
 interface (Strong p, Choice p) => Wander (p : Type -> Type -> Type) where
   wander : ({f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
@@ -287,5 +297,8 @@ Wander Arr where
 
 Applicative f => Wander (UpStarred f) where
   wander @{ap} t (UpStar f) = UpStar $ t ap f
+
+Monoid r => Wander (Forgotten r) where
+  wander t (Forget r) = Forget $ runConst . t (%implementation) (MkConst . r)
 
 -- }}}
