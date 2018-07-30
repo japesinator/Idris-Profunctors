@@ -1,5 +1,6 @@
 module Data.Profunctor
 
+import Control.Monad.Identity
 import Control.Arrow
 import Control.Category
 import Data.Morphisms
@@ -275,5 +276,16 @@ implementation Applicative f => Choice (UpStarred f) where
 implementation Monoid r => Choice (Forgotten r) where
   left'  (Forget k) = Forget .      either k $ const neutral
   right' (Forget k) = Forget . flip either k $ const neutral
+
+
+||| Profunctors that support polymorphic traversals
+interface (Strong p, Choice p) => Wander (p : Type -> Type -> Type) where
+  wander : ({f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
+
+Wander Arr where
+  wander t (MkArr f) = MkArr $ runIdentity . t (%implementation) (Id . f)
+
+Applicative f => Wander (UpStarred f) where
+  wander @{ap} t (UpStar f) = UpStar $ t ap f
 
 -- }}}

@@ -9,9 +9,12 @@ modules = Data.Profunctor
         , Data.Profunctor.Composition
         , Data.Profunctor.Fold
         , Data.Profunctor.Iso
+        , Data.Profunctor.Index
         , Data.Profunctor.Lens
+        , Data.Profunctor.Lens.At
         , Data.Profunctor.Prism
         , Data.Profunctor.Trace
+        , Data.Profunctor.Traversal
         , Data.Verified.Profunctor
 
 opts = "-p contrib"
