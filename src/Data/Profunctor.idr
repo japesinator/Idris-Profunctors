@@ -267,10 +267,10 @@ interface Profunctor p => Choice (p : Type -> Type -> Type) where
   right' = dimap mirror mirror . left'
 
 implementation Monad m => Choice (Kleislimorphism m) where
-  left'  f = Kleisli $ either (applyKleisli $ f        >>> arrow Left)
-                              (applyKleisli $ arrow id >>> arrow Right)
-  right' f = Kleisli $ either (applyKleisli $ arrow id >>> arrow Left)
-                              (applyKleisli $ f        >>> arrow Right)
+  left'  f = Kleisli $ either (applyKleisli       $ f        >>> arrow Left)
+                              (applyKleisli       $ arrow id >>> arrow Right)
+  right' f = Kleisli $ either (applyKleisli {f=m} $ arrow id >>> arrow Left)
+                              (applyKleisli       $ f        >>> arrow Right)
 
 implementation Choice Arr where
   left'  (MkArr f) = MkArr $ either (Left . f) Right
