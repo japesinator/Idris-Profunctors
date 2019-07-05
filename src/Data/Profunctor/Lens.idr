@@ -45,8 +45,8 @@ view = runForget . (\f => f $ Forget id)
 
 infixl 8 ^.
 ||| Infix synonym for `view`
-(^.) : Lens {p=Forgotten a} s t a b -> s -> a
-(^.) = view
+(^.) : s -> Lens {p=Forgotten a} s t a b -> a
+(^.) = flip view
 
 ||| Build a function to `map` from a Lens
 over : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
