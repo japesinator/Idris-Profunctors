@@ -50,33 +50,9 @@ interface Profunctor (p : Type -> Type -> Type) where
 
 implementation Monad m => Profunctor (Kleislimorphism m) where
   dimap f g (Kleisli h) = Kleisli $ \a => liftA g $ h $ f a
-  
-||| An injective (->)
-|||
-||| ````idris example
-||| believe_me : Arr a b
-||| ````
-|||
-record Arr a b where
-  constructor MkArr
-  runArr : (a -> b)
 
-implementation Category Arr where
-  id  = assert_total id
-  (.) = assert_total (.)
-
-implementation Arrow Arr where
-  arrow                   = MkArr
-  first                   = MkArr . (\f,(a,b) => (f a,b)) . runArr
-  second                  = MkArr . (\f,(a,b) => (a,f b)) . runArr
-  (MkArr f) *** (MkArr g) = MkArr $ \(a,b) => (f a, g b)
-  (MkArr f) &&& (MkArr g) = MkArr $ \a => (f a, g a)
-
-implementation Profunctor Arr where
-  dimap f g (MkArr h) = MkArr $ g . h . f
-
-implementation Functor (Arr a) where
-  map = rmap
+implementation Profunctor Morphism where
+  dimap f g (Mor h) = Mor $ g . h . f
 
 ||| A method of attaching a phantom type as a "tag"
 record Tagged a b where
@@ -226,9 +202,9 @@ implementation Monad m => Strong (Kleislimorphism m) where
   first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => pure (b, snd ac)
   second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= pure . MkPair (fst ca)
 
-implementation Strong Arr where
-  first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
-  second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
+implementation Strong Morphism where
+  first'  (Mor f) = Mor $ \(a,c) => (f a, c)
+  second' (Mor f) = Mor $ \(c,a) => (c, f a)
 
 implementation Functor m => Strong (UpStarred m) where
   first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) . f $ fst ac
@@ -272,9 +248,9 @@ implementation Monad m => Choice (Kleislimorphism m) where
   right' f = Kleisli $ either (applyKleisli {f=m} $ arrow id >>> arrow Left)
                               (applyKleisli       $ f        >>> arrow Right)
 
-implementation Choice Arr where
-  left'  (MkArr f) = MkArr $ either (Left . f) Right
-  right' (MkArr f) = MkArr $ either Left (Right . f)
+implementation Choice Morphism where
+  left'  (Mor f) = Mor $ either (Left . f) Right
+  right' (Mor f) = Mor $ either Left (Right . f)
 
 implementation Choice Tagged where
   left'  = Tag . Left  . runTagged
@@ -292,8 +268,8 @@ implementation Monoid r => Choice (Forgotten r) where
 interface (Strong p, Choice p) => Wander (p : Type -> Type -> Type) where
   wander : ({f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
 
-Wander Arr where
-  wander t (MkArr f) = MkArr $ runIdentity . t (%implementation) (Id . f)
+Wander Morphism where
+  wander t (Mor f) = Mor $ runIdentity . t (%implementation) (Id . f)
 
 Applicative f => Wander (UpStarred f) where
   wander @{ap} t (UpStar f) = UpStar $ t ap f

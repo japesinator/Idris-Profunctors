@@ -1,5 +1,6 @@
 module Data.Profunctor.Prism
 
+import Data.Morphisms
 import Data.Profunctor
 import Data.Profunctor.Iso
 
@@ -10,8 +11,8 @@ interface Choice p => Prisming (p : Type -> Type -> Type) where
   costrength : p a b -> p (Either b a) b
   costrength = rmap (either id id) . right'
 
-implementation Prisming Arr where
-  costrength = MkArr . either id . Delay . runArr
+implementation Prisming Morphism where
+  costrength = Mor . either id . Delay . applyMor
 
 implementation Monoid r => Prisming (Forgotten r) where
   costrength p = Forget . either (const neutral) $ runForget p

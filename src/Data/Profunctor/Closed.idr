@@ -2,6 +2,7 @@ module Data.Profunctor.Closed
 
 import Control.Arrow
 import Control.Category
+import Data.Morphisms
 import Data.Profunctor
 import Data.Profunctor.Unsafe
 
@@ -17,8 +18,8 @@ interface Profunctor p => Closed (p : Type -> Type -> Type) where
   |||
   closed : {x : _} -> p a b -> p (x -> a) (x -> b)
 
-implementation Closed Arr where
-  closed = MkArr . (.) . runArr
+implementation Closed Morphism where
+  closed = Mor . (.) . applyMor
 
 implementation Functor f => Closed (DownStarred f) where
   closed (DownStar fab) = DownStar $ \fxa,x => fab $ map (\f => f x) fxa

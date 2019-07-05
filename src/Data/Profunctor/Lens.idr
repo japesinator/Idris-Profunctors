@@ -2,6 +2,7 @@ module Data.Profunctor.Lens
 
 import Data.Fin
 import Data.HVect
+import Data.Morphisms
 import Data.Profunctor
 import Data.Profunctor.Iso
 import Data.Vect
@@ -19,8 +20,8 @@ implementation Lensing (Forgotten r) where
 implementation Functor f => Lensing (UpStarred f) where
   strength (UpStar f) = UpStar . uncurry $ (. f) . (<$>)
 
-implementation Lensing Arr where
-  strength = MkArr . uncurry . flip (.) . runArr
+implementation Lensing Morphism where
+  strength = Mor . uncurry . flip (.) . applyMor
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 Lens : Lensing p => Type -> Type -> Type -> Type -> Type
@@ -48,56 +49,56 @@ infixl 8 ^.
 (^.) = view
 
 ||| Build a function to `map` from a Lens
-over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
-over = (runArr .) . (. MkArr)
+over : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
+over = (applyMor .) . (. Mor)
 
 infixr 4 &~
 ||| Infix synonym for `over`
-(&~) : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
+(&~) : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
 (&~) = over
 
 ||| Set something to a specific value with a Lens
-set : Lens {p=Arr} s t a b -> b -> s -> t
+set : Lens {p=Morphism} s t a b -> b -> s -> t
 set = (. const) . over
 
 infixr 4 .~
 ||| Infix synonym for `set`
-(.~) : Lens {p=Arr} s t a b -> b -> s -> t
+(.~) : Lens {p=Morphism} s t a b -> b -> s -> t
 (.~) = set
 
 infixr 4 +~
 ||| Increment the target of a lens by a number
-(+~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(+~) : Num a => Lens {p=Morphism} s t a a -> a -> s -> t
 (+~) = (. (+)) . over
 
 infixr 4 -~
 ||| Decrement the target of a lens by a number
-(-~) : Neg a => Lens {p=Arr} s t a a -> a -> s -> t
+(-~) : Neg a => Lens {p=Morphism} s t a a -> a -> s -> t
 (-~) = (. (-)) . over
 
 infixr 4 *~
 ||| Multiply the target of a lens by a number
-(*~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+(*~) : Num a => Lens {p=Morphism} s t a a -> a -> s -> t
 (*~) = (. (*)) . over
 
 infixr 4 /~
 ||| Divide the target of a lens by a number
-(/~) : Lens {p=Arr} s t Double Double -> Double -> s -> t
+(/~) : Lens {p=Morphism} s t Double Double -> Double -> s -> t
 (/~) = (. (/)) . over
 
 infixr 4 <+>~
 ||| Associatively combine the target of a Lens with another value
-(<+>~) : Semigroup a => Lens {p=Arr} s t a a -> a -> s -> t
+(<+>~) : Semigroup a => Lens {p=Morphism} s t a a -> a -> s -> t
 (<+>~) = (. (<+>)) . over
 
 infixr 4 $>~
 ||| Rightwards sequence the target of a lens with an applicative
-($>~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+($>~) : Applicative f => Lens {p=Morphism} s t (f a) (f a) -> f a -> s -> t
 ($>~) l = over l . (*>)
 
 infixr 4 <$~
 ||| Rightwards sequence the target of a lens with an applicative
-(<$~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+(<$~) : Applicative f => Lens {p=Morphism} s t (f a) (f a) -> f a -> s -> t
 (<$~) l = over l . (<*)
 
 ||| A Lens for the first element of a tuple

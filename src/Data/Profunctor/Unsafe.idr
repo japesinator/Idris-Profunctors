@@ -19,7 +19,7 @@ interface Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
   (.#) : p b c -> (a -> b) -> p a c
   (.#) = flip lmap
 
-implementation UnsafeProfunctor Arr where
+implementation UnsafeProfunctor Morphism where
   (#.) = const believe_me
   (.#) = const . believe_me
 
