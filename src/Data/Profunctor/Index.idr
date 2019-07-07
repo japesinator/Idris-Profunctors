@@ -11,6 +11,9 @@ import Data.Profunctor.Traversal
 interface Wander p => Index (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) where
   ix : a -> Traversal' {p} m b
 
+Wander p => Index p (Maybe a) () a where
+  ix {a} () = wander $ traverse {f=f1} {t=Maybe}
+
 (Wander p, Ord k) => Index p (SortedMap k v) k v where
   -- magical f1 
   ix k = wander $ \coalg, m => maybe (pure {f=f1} m) (map {f=f1} (\v => insert k v m) . coalg) (lookup k m) 

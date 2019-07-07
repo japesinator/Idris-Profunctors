@@ -1,5 +1,6 @@
 module Data.Profunctor.Lens.At
 
+import Data.Morphisms
 import Data.SortedMap
 import Data.SortedSet
 import Data.Profunctor
@@ -21,3 +22,9 @@ interface (Lensing p, Index p m a b) => At (p : Type -> Type -> Type) (m : Type)
       get xs = if contains x xs then Just () else Nothing
       update Nothing = delete x
       update (Just _) = insert x  
+
+(Wander p, Lensing p) => At p (Maybe a) () a where
+  at () = id
+
+sans : At Morphism m a b => a -> m -> m
+sans {m} {a} {b} k = at {p=Morphism} {m} {a} {b} k .~ Nothing 
