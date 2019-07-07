@@ -17,4 +17,6 @@ modules = Data.Profunctor
         , Data.Profunctor.Traversal
         , Data.Verified.Profunctor
 
+pkgs = bifunctors
+
 opts = "-p contrib"

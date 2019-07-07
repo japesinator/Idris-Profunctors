@@ -43,10 +43,21 @@ lens gt st = lens' $ \s => (\b => st s b, gt s)
 view : Lens {p=Forgotten a} s t a b -> s -> a
 view = runForget . (\f => f $ Forget id)
 
+foldMapOf : Lens {p=Forgotten r} s t a b -> (a -> r) -> s -> r
+foldMapOf l f = runForget $ l $ Forget f
+
+||| Create a getter from arbitrary function `s -> a`.
+getter : (s -> a) -> Lens {p=Forgotten a} s t a b
+getter k = \(Forget aa) => Forget $ aa . k
+
 infixl 8 ^.
 ||| Infix synonym for `view`
 (^.) : s -> Lens {p=Forgotten a} s t a b -> a
 (^.) = flip view
+
+infixl 8 ^?
+(^?) : s -> Lens {p=Forgotten $ Maybe a} s t a b -> Maybe a
+s ^? l = foldMapOf l Just s
 
 ||| Build a function to `map` from a Lens
 over : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
@@ -57,6 +68,9 @@ infixr 4 &~
 (&~) : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
 (&~) = over
 
+sets : ((a -> b) -> s -> t) -> Lens {p=Morphism} s t a b
+sets l = \(Mor f) => Mor $ l f 
+
 ||| Set something to a specific value with a Lens
 set : Lens {p=Morphism} s t a b -> b -> s -> t
 set = (. const) . over
@@ -65,6 +79,9 @@ infixr 4 .~
 ||| Infix synonym for `set`
 (.~) : Lens {p=Morphism} s t a b -> b -> s -> t
 (.~) = set
+
+mapped : Functor f => Lens {p=Morphism} (f a) (f b) a b
+mapped = sets map
 
 infixr 4 +~
 ||| Increment the target of a lens by a number
@@ -83,7 +100,7 @@ infixr 4 *~
 
 infixr 4 /~
 ||| Divide the target of a lens by a number
-(/~) : Lens {p=Morphism} s t Double Double -> Double -> s -> t
+(/~) : Fractional a => Lens {p=Morphism} s t a a -> a -> s -> t
 (/~) = (. (/)) . over
 
 infixr 4 <+>~
