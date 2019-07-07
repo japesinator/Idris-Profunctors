@@ -20,4 +20,4 @@ Wander p => Index p (Maybe a) () a where
 
 (Wander p, Ord a) => Index p (SortedSet a) a () where
   -- magical f1 
-  ix x = wander $ \coalg => pure {f=f1} . SortedSet.insert x  
+  ix x = wander $ \_ => pure {f=f1} . SortedSet.insert x  
