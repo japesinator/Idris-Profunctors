@@ -16,5 +16,8 @@ Traversal {p} = preIso {p}
 Traversal' : Wander p => Type -> Type -> Type
 Traversal' {p} = Simple $ Traversal {p}
 
+traversed : (Wander p, Traversable t) => Traversal {p} (t a) (t b) a b
+traversed {t} = wander $ traverse {f=f1} {t}
+
 both : Bitraversable r => Traversal {p=Morphism} (r a a) (r b b) a b
 both (Mor f) = Mor $ runIdentity . bitraverse {f=Identity} (Id . f) (Id . f) 

@@ -5,12 +5,13 @@ import Data.SortedMap
 import Data.SortedSet
 import Data.Profunctor
 import Data.Profunctor.Lens
-import Data.Profunctor.Index
+import Data.Profunctor.Traversal.Index
 
 %default total
 %access public export
 
-interface (Lensing p, Index p m a b) => At (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) where
+||| Allows adding and deleting elements from "container-like" types
+interface (Lensing p, Index p m a b) => At (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) | m where
   at : a -> Lens' {p} m (Maybe b)
 
 (Wander p, Lensing p) => At p (Maybe a) () a where
@@ -27,4 +28,4 @@ interface (Lensing p, Index p m a b) => At (p : Type -> Type -> Type) (m : Type)
       update (Just _) = insert x  
 
 sans : At Morphism m a b => a -> m -> m
-sans {m} {a} {b} k = at {p=Morphism} {m} {a} {b} k .~ Nothing 
+sans {m} k = at {p=Morphism} {m} k .~ Nothing 

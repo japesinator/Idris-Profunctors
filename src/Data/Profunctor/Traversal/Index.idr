@@ -1,4 +1,4 @@
-module Data.Profunctor.Index
+module Data.Profunctor.Traversal.Index
 
 import Data.SortedMap
 import Data.SortedSet
@@ -8,11 +8,11 @@ import Data.Profunctor.Traversal
 %default total
 %access public export
 
-interface Wander p => Index (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) where
+interface Wander p => Index (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) | m where
   ix : a -> Traversal' {p} m b
 
 Wander p => Index p (Maybe a) () a where
-  ix {a} () = wander $ traverse {f=f1} {t=Maybe}
+  ix () = traversed
 
 (Wander p, Ord k) => Index p (SortedMap k v) k v where
   -- magical f1 

@@ -50,6 +50,10 @@ foldMapOf l f = runForget $ l $ Forget f
 getter : (s -> a) -> Lens {p=Forgotten a} s t a b
 getter k = \(Forget aa) => Forget $ aa . k
 
+||| Combine two getters.
+takeBoth : Lens {p=Forgotten a} s t a b -> Lens {p=Forgotten c} s t c d -> Lens {p=Forgotten (a, c)} s t (a, c) (b, d)
+takeBoth l r = getter $ \s =>  (view l s, view r s)
+
 infixl 8 ^.
 ||| Infix synonym for `view`
 (^.) : s -> Lens {p=Forgotten a} s t a b -> a

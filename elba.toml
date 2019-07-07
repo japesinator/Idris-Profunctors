@@ -3,6 +3,9 @@ name = "japesinator/Idris-Profunctors"
 version = "0.1.0"
 authors = []
 
+[dependencies]
+"japesinator/Idris-Bifunctors" = { git = "https://github.com/andrevidela/Idris-Bifunctors" }
+
 [targets.lib]
 path = "src"
 name = "profunctors"
@@ -13,12 +16,12 @@ mods = [ "Data.Profunctor"
        , "Data.Profunctor.Composition"
        , "Data.Profunctor.Fold"
        , "Data.Profunctor.Iso"
-       , "Data.Profunctor.Index"
        , "Data.Profunctor.Lens"
        , "Data.Profunctor.Lens.At"
        , "Data.Profunctor.Prism"
        , "Data.Profunctor.Trace"
        , "Data.Profunctor.Traversal"
+       , "Data.Profunctor.Traversal.Index"
        , "Data.Verified.Profunctor"
        ]
 idris_opts = ["-p", "contrib"]

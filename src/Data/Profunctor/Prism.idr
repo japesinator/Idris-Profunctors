@@ -93,6 +93,10 @@ only a = prism (const a) $ \x => if x == a then Left x else Right ()
 nearly : Prisming p => a -> (a -> Bool) -> Prism' {p} a ()
 nearly a p = prism (const a) $ if p a then Left else const $ Right ()
 
+||| Checks whether an object would match a given `Prism`
+is : Prism {p=Forgotten (First a)} s _ a _ -> s -> Bool
+is = (isJust .) . preview
+
 ||| Checks whether an object won't match a given `Prism`
 isn't : Prism {p=Forgotten (First a)} s _ a _ -> s -> Bool
 isn't = (isNothing .) . preview
