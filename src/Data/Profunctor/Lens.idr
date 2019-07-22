@@ -40,24 +40,30 @@ lens' f = lmap f . strength
 lens : Lensing p => (s -> a) -> (s -> b -> t) -> Lens {p} s t a b
 lens gt st = lens' $ \s => (\b => st s b, gt s)
 
-||| Build a function to look at stuff from a Lens
-view : Lens {p=Forgotten a} s t a b -> s -> a
-view = runForget . (\f => f $ Forget id)
-
 foldMapOf : Lens {p=Forgotten r} s t a b -> (a -> r) -> s -> r
 foldMapOf l f = runForget $ l $ Forget f
 
+foldrOf : Lens {p=Forgotten (Endomorphism r)} s t a b -> (a -> r -> r) -> r -> s -> r
+foldrOf p f = flip $ applyEndo . foldMapOf p (Endo . f) 
+
+Getter : Type -> Type -> Type -> Type -> Type
+Getter s t a = Lens {p=Forgotten a} s t a
+
+||| Build a function to look at stuff from a Lens
+view : Getter s t a b -> s -> a
+view = runForget . (\f => f $ Forget id)
+
 ||| Create a getter from arbitrary function `s -> a`.
-getter : (s -> a) -> Lens {p=Forgotten a} s t a b
-getter k = \(Forget aa) => Forget $ aa . k
+getter : (s -> a) -> Getter s t a b
+getter k (Forget aa) = Forget $ aa . k
 
 ||| Combine two getters.
-takeBoth : Lens {p=Forgotten a} s t a b -> Lens {p=Forgotten c} s t c d -> Lens {p=Forgotten (a, c)} s t (a, c) (b, d)
+takeBoth : Getter s t a b -> Getter s t c d -> Getter s t (a, c) (b, d)
 takeBoth l r = getter $ \s =>  (view l s, view r s)
 
 infixl 8 ^.
 ||| Infix synonym for `view`
-(^.) : s -> Lens {p=Forgotten a} s t a b -> a
+(^.) : s -> Getter s t a b -> a
 (^.) = flip view
 
 infixl 8 ^?
@@ -74,7 +80,7 @@ infixr 4 &~
 (&~) = over
 
 sets : ((a -> b) -> s -> t) -> Lens {p=Morphism} s t a b
-sets l = \(Mor f) => Mor $ l f 
+sets l (Mor f) = Mor $ l f 
 
 ||| Set something to a specific value with a Lens
 set : Lens {p=Morphism} s t a b -> b -> s -> t
