@@ -4,6 +4,7 @@ import Data.Fin
 import Data.HVect
 import Data.Morphisms
 import Data.Profunctor
+import Data.Profunctor.Strong
 import Data.Profunctor.Iso
 import Data.Vect
 

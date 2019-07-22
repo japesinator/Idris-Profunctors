@@ -2,6 +2,7 @@ module Data.Profunctor.Prism
 
 import Data.Morphisms
 import Data.Profunctor
+import Data.Profunctor.Choice
 import Data.Profunctor.Iso
 
 %access public export

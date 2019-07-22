@@ -1,6 +1,7 @@
 module Data.Profunctor.Fold
 
 import Data.Profunctor
+import Data.Profunctor.Wander
 import Data.Profunctor.Iso
 import Data.Morphisms
 import Data.Bitraversable

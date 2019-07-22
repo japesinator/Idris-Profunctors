@@ -5,18 +5,8 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 
+%default total
 %access public export
-
-record Const (a : Type) (b : Type) where
-  constructor MkConst
-  runConst : a
-
-Functor (Const m) where
-  map _ (MkConst v) = MkConst v
-
-Monoid m => Applicative (Const m) where
-  pure _ = MkConst neutral
-  (MkConst a) <*> (MkConst b) = MkConst (a <+> b)
 
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
@@ -174,107 +164,10 @@ implementation Foldable (Forgotten r a) where
 implementation Traversable (Forgotten r a) where
   traverse = const $ pure . Forget . runForget
 
--- }}}
--- Strong
--- {{{
+record Zipping a b where
+  constructor MkZipping
+  runZipping : a -> a -> b
 
-||| Generalized UpStar of a Strong Functor
-interface Profunctor p => Strong (p : Type -> Type -> Type) where
-  ||| Create a new Profunctor of tuples with first element from the original
-  |||
-  ||| ````idris example
-  ||| first' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  first'  : p a b -> p (a, c) (b, c)
-  first'  = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . second'
-
-  ||| Create a new Profunctor of tuples with second element from the original
-  |||
-  ||| ````idris example
-  ||| second' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  second' : p a b -> p (c, a) (c, b)
-  second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
-
-implementation Monad m => Strong (Kleislimorphism m) where
-  first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => pure (b, snd ac)
-  second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= pure . MkPair (fst ca)
-
-implementation Strong Morphism where
-  first'  (Mor f) = Mor $ \(a,c) => (f a, c)
-  second' (Mor f) = Mor $ \(c,a) => (c, f a)
-
-implementation Functor m => Strong (UpStarred m) where
-  first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) . f $ fst ac
-  second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  . f $ snd ca
-
-implementation Arrow p => Strong (WrappedArrow p) where
-  first'  = WrapArrow . first  . unwrapArrow
-  second' = WrapArrow . second . unwrapArrow
-
-implementation Strong (Forgotten r) where
-  first'  (Forget k) = Forget $ k . fst
-  second' (Forget k) = Forget $ k . snd
-
--- }}}
--- Choice
--- {{{
-
-||| Generalized DownStar of a Costrong Functor
-interface Profunctor p => Choice (p : Type -> Type -> Type) where
-  ||| Like first' but with sum rather than product types
-  |||
-  ||| ````idris example
-  ||| left' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  left' : p a b -> p (Either a c) (Either b c)
-  left' = dimap mirror mirror . right'
-
-  ||| Like second' but with sum rather than product types
-  |||
-  ||| ````idris example
-  ||| right' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  right' : p a b -> p (Either c a) (Either c b)
-  right' = dimap mirror mirror . left'
-
-implementation Monad m => Choice (Kleislimorphism m) where
-  left'  f = Kleisli $ either (applyKleisli       $ f        >>> arrow Left)
-                              (applyKleisli       $ arrow id >>> arrow Right)
-  right' f = Kleisli $ either (applyKleisli {f=m} $ arrow id >>> arrow Left)
-                              (applyKleisli       $ f        >>> arrow Right)
-
-implementation Choice Morphism where
-  left'  (Mor f) = Mor $ either (Left . f) Right
-  right' (Mor f) = Mor $ either Left (Right . f)
-
-implementation Choice Tagged where
-  left'  = Tag . Left  . runTagged
-  right' = Tag . Right . runTagged
-
-implementation Applicative f => Choice (UpStarred f) where
-  left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
-  right' (UpStar f) = UpStar $ either (map Left . pure) (map Right . f   )
-
-implementation Monoid r => Choice (Forgotten r) where
-  left'  (Forget k) = Forget .      either k $ const neutral
-  right' (Forget k) = Forget . flip either k $ const neutral
-
-||| Profunctors that support polymorphic traversals
-interface (Strong p, Choice p) => Wander (p : Type -> Type -> Type) where
-  wander : ({f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
-
-Wander Morphism where
-  wander t (Mor f) = Mor $ runIdentity . t (%implementation) (Id . f)
-
-Applicative f => Wander (UpStarred f) where
-  wander @{ap} t (UpStar f) = UpStar $ t ap f
-
-Monoid r => Wander (Forgotten r) where
-  wander t (Forget r) = Forget $ runConst . t (%implementation) (MkConst . r)
-
+Profunctor Zipping where
+  dimap f g (MkZipping h) = MkZipping $ \a1, a2 => g $ h (f a1) (f a2)
 -- }}}

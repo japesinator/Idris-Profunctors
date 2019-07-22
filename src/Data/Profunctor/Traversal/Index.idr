@@ -3,6 +3,7 @@ module Data.Profunctor.Traversal.Index
 import Data.SortedMap
 import Data.SortedSet
 import Data.Profunctor
+import Data.Profunctor.Wander
 import Data.Profunctor.Traversal
 
 %default total

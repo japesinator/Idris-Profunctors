@@ -2,6 +2,7 @@ module Data.Profunctor.Fold
 
 import Control.Algebra
 import Data.Profunctor
+import Data.Profunctor.Choice
 import Data.Profunctor.Prism
 import Data.SortedSet
 

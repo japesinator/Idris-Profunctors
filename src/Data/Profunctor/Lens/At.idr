@@ -4,6 +4,7 @@ import Data.Morphisms
 import Data.SortedMap
 import Data.SortedSet
 import Data.Profunctor
+import Data.Profunctor.Wander
 import Data.Profunctor.Lens
 import Data.Profunctor.Traversal.Index
 

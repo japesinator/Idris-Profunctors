@@ -4,14 +4,17 @@ sourcedir = src
 
 modules = Data.Profunctor
         , Data.Profunctor.Cayley
+        , Data.Profunctor.Choice        
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
         , Data.Profunctor.Fold
+        , Data.Profunctor.Grate
         , Data.Profunctor.Iso
         , Data.Profunctor.Lens
         , Data.Profunctor.Lens.At
         , Data.Profunctor.Prism
+        , Data.Profunctor.Strong
         , Data.Profunctor.Trace
         , Data.Profunctor.Traversal
         , Data.Profunctor.Traversal.Index

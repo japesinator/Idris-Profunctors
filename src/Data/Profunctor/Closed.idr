@@ -4,6 +4,7 @@ import Control.Arrow
 import Control.Category
 import Data.Morphisms
 import Data.Profunctor
+import Data.Profunctor.Strong
 import Data.Profunctor.Unsafe
 
 %access public export
@@ -26,6 +27,9 @@ implementation Functor f => Closed (DownStarred f) where
 
 implementation Monoid r => Closed (Forgotten r) where
   closed = const . Forget $ const neutral
+
+Closed Zipping where
+  closed (MkZipping f) = MkZipping $ \f1, f2, x => f (f1 x) (f2 x)
 
 ||| Closure adjoins a Closed structure to any Profunctor
 record Closure (p : Type -> Type -> Type) a b where

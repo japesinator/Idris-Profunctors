@@ -3,6 +3,8 @@ module Data.Profunctor.Cayley
 import Control.Arrow
 import Control.Category
 import Data.Profunctor
+import Data.Profunctor.Strong
+import Data.Profunctor.Choice
 import Data.Profunctor.Unsafe
 
 %access public export
