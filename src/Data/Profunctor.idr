@@ -79,6 +79,10 @@ implementation Applicative f => Applicative (UpStarred f a) where
   pure                        = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
+Alternative f => Alternative (UpStarred f a) where
+  empty = UpStar $ const empty
+  (UpStar fa) <|> (UpStar fb) = UpStar $ \x => (fa x) <|> (fb x)
+
 implementation Monad f => Monad (UpStarred f a) where
   (UpStar m) >>= f = UpStar $ \e => m e >>= flip runUpStar e . f
 
