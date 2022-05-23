@@ -160,7 +160,7 @@ implementation Arrow p => Arrow (WrappedArrow p) where
 export
 implementation Arrow p => Profunctor (WrappedArrow p) where
   lmap = (>>>) . arrow
-  rmap = (.)   . arrow
+  rmap f = (arrow f .)
 
 -- }}}
 -- Forget
