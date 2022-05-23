@@ -173,7 +173,7 @@ implementation Arrow p => Profunctor (WrappedArrow p) where
 ||| ````
 |||
 public export
-record Forgotten r a b where
+record Forgotten (r : Type) (a : Type) (b : Type) where
   constructor Forget
   runForget : a -> r
 
