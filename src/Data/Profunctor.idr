@@ -6,10 +6,10 @@ import Control.Category
 import Data.Morphisms
 
 %default total
-%access public export
 
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
+public export
 interface Profunctor (p : Type -> Type -> Type) where
   ||| Map over both arguments
   |||
@@ -38,21 +38,26 @@ interface Profunctor (p : Type -> Type -> Type) where
   rmap : (a -> b) -> p c a -> p c b
   rmap = dimap id
 
+export
 implementation Monad m => Profunctor (Kleislimorphism m) where
   dimap f g (Kleisli h) = Kleisli $ \a => liftA g $ h $ f a
 
+export
 implementation Profunctor Morphism where
   dimap f g (Mor h) = Mor $ g . h . f
 
 ||| A method of attaching a phantom type as a "tag"
+public export
 record Tagged a b where
   constructor Tag
   runTagged : b
 
+export
 implementation Profunctor Tagged where
   lmap   = const $ Tag . runTagged
   rmap f = Tag . f . runTagged
 
+export
 implementation Functor (Tagged a) where
   map = rmap
 
@@ -65,24 +70,30 @@ implementation Functor (Tagged a) where
 ||| UpStar $ \x => Just $ isDigit x
 ||| ````
 |||
+public export
 record UpStarred (f : Type -> Type) d c where
   constructor UpStar
   runUpStar : d -> f c
 
+export
 implementation Functor f => Profunctor (UpStarred f) where
   dimap ab cd (UpStar bfc) = UpStar $ \a => map cd $ bfc $ ab a
 
+export
 implementation Functor f => Functor (UpStarred f a) where
   map = rmap
 
+export
 implementation Applicative f => Applicative (UpStarred f a) where
   pure                        = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
-Alternative f => Alternative (UpStarred f a) where
+export
+implementation Alternative f => Alternative (UpStarred f a) where
   empty = UpStar $ const empty
   (UpStar fa) <|> (UpStar fb) = UpStar $ \x => (fa x) <|> (fb x)
 
+export
 implementation Monad f => Monad (UpStarred f a) where
   (UpStar m) >>= f = UpStar $ \e => m e >>= flip runUpStar e . f
 
@@ -96,20 +107,25 @@ implementation Monad f => Monad (UpStarred f a) where
 ||| DownStar $ show
 ||| ````
 |||
+public export
 record DownStarred (f : Type -> Type) d c where
   constructor DownStar
   runDownStar : f d -> c
 
+export
 implementation Functor f => Profunctor (DownStarred f) where
   dimap ab cd (DownStar fbc) = DownStar $ cd . fbc . map ab
 
+export
 implementation Functor (DownStarred f a) where
   map = (DownStar .) . (. runDownStar) . (.)
 
+export
 implementation Applicative (DownStarred f a) where
   pure                            = DownStar . const
   (DownStar ff) <*> (DownStar fx) = DownStar $ \a => ff a $ fx a
 
+export
 implementation Monad (DownStarred f a) where
   (DownStar m) >>= f = DownStar $ \x => runDownStar (f $ m x) x
 
@@ -123,14 +139,17 @@ implementation Monad (DownStarred f a) where
 ||| WrapArrow $ arrow ((+) 1)
 ||| ````
 |||
+public export
 record WrappedArrow (p : Type -> Type -> Type) a b where
   constructor WrapArrow
   unwrapArrow : p a b
 
+export
 implementation Category p => Category (WrappedArrow p) where
   (WrapArrow f) . (WrapArrow g) = WrapArrow $ f . g
   id                            = WrapArrow id
 
+export
 implementation Arrow p => Arrow (WrappedArrow p) where
   arrow                           = WrapArrow . arrow
   first                           = WrapArrow . first  . unwrapArrow
@@ -138,6 +157,7 @@ implementation Arrow p => Arrow (WrappedArrow p) where
   (WrapArrow a) *** (WrapArrow b) = WrapArrow $ a *** b
   (WrapArrow a) &&& (WrapArrow b) = WrapArrow $ a &&& b
 
+export
 implementation Arrow p => Profunctor (WrappedArrow p) where
   lmap = (>>>) . arrow
   rmap = (.)   . arrow
@@ -152,26 +172,33 @@ implementation Arrow p => Profunctor (WrappedArrow p) where
 ||| Forget ((+) 1)
 ||| ````
 |||
+public export
 record Forgotten r a b where
   constructor Forget
   runForget : a -> r
 
+export
 implementation Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
 
+export
 implementation Functor (Forgotten r a) where
   map = const $ Forget . runForget
 
+export
 implementation Foldable (Forgotten r a) where
   foldr = const const
 
+export
 implementation Traversable (Forgotten r a) where
   traverse = const $ pure . Forget . runForget
 
+public export
 record Zipping a b where
   constructor MkZipping
   runZipping : a -> a -> b
 
-Profunctor Zipping where
+export
+implementation Profunctor Zipping where
   dimap f g (MkZipping h) = MkZipping $ \a1, a2 => g $ h (f a1) (f a2)
 -- }}}
