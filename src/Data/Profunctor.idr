@@ -40,7 +40,7 @@ interface Profunctor (0 p : Type -> Type -> Type) | p where
 
 export
 implementation Monad m => Profunctor (Kleislimorphism m) where
-  dimap f g (Kleisli h) = Kleisli $ \a => liftA g $ h $ f a
+  dimap f g (Kleisli h) = Kleisli $ map g . h . f
 
 export
 implementation Profunctor Morphism where
