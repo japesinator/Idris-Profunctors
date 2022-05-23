@@ -10,7 +10,7 @@ import Data.Morphisms
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
 public export
-interface Profunctor (p : Type -> Type -> Type) where
+interface Profunctor (0 p : Type -> Type -> Type) | p where
   ||| Map over both arguments
   |||
   ||| ````idris example
