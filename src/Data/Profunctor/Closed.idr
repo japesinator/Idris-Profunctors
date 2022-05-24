@@ -9,7 +9,7 @@ import Data.Profunctor.Unsafe
 
 ||| A Closed Profunctor that allows the closed structure to pass through
 public export
-interface Profunctor p => Closed (p : Type -> Type -> Type) where
+interface Profunctor p => Closed (0 p : Type -> Type -> Type) where
   ||| Pass the closed structure through the Profunctor
   |||
   ||| ````idris example
