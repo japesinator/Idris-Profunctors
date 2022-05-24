@@ -7,7 +7,7 @@ infixr 9 #.
 infixl 8 .#
 
 public export
-interface Profunctor p => UnsafeProfunctor (p : Type -> Type -> Type) where
+interface Profunctor p => UnsafeProfunctor (0 p : Type -> Type -> Type) where
   ||| Map the second argument of a Profunctor covariantly with a function
   ||| which is assumed to be a cast
   (#.) : (b -> c) -> p a b -> p a c
