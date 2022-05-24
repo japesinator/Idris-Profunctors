@@ -2,11 +2,11 @@ module Data.Profunctor.Iso
 
 import Data.Profunctor
 
-infixl 1 &
+infixl 1 .&
 
 export
-(&) : a -> (a -> b) -> b
-a & f = f a
+(.&) : a -> (a -> b) -> b
+a .& f = f a
 
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
