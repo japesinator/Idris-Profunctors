@@ -30,7 +30,7 @@ implementation Profunctor p => Functor (Procomposed p q a) where
 public export
 record Rifted (p : Type -> Type -> Type) (q : Type -> Type -> Type) a b where
   constructor Rift
-  runRift : p b x -> q a x
+  runRift : p b y -> q a y
 
 export
 implementation (Profunctor p, Profunctor q) => Profunctor (Rifted p q) where
