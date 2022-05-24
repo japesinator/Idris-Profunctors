@@ -1,5 +1,6 @@
 module Data.Profunctor.Iso
 
+import Data.Either
 import Data.Profunctor
 
 infixl 1 .&
