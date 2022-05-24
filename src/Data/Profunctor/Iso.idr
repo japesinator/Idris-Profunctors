@@ -27,13 +27,13 @@ preIso s t a b = p a b -> p s t
 
 ||| An isomorphism family.
 public export
-Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
-Iso {p} = preIso {p}
+Iso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Iso s t a b = Profunctor p => preIso {p} s t a b
 
 ||| An isomorphism family that does not change types
 public export
-Iso' : Profunctor p => Type -> Type -> Type
-Iso' {p} = Simple $ Iso {p}
+Iso' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Iso' s a = Simple (Iso {p}) s a
 
 ||| Turns a coavariant and contravariant function into an `Iso`
 export
