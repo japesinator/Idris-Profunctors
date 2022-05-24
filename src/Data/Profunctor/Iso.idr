@@ -48,9 +48,8 @@ lensIso gt = iso (\s => (gt s, s)) . uncurry . flip
 
 ||| Builds an `Iso` useful for constructing a `Prism`
 export
-prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
-                           Iso {p} s t (Either t a) (Either t b)
-prismIso = flip iso . either id . Delay
+prismIso : (b -> t) -> (s -> Either t a) -> Iso {p} s t (Either t a) (Either t b)
+prismIso f = flip iso $ either id $ Delay f
 
 ||| Convert an element of the first half of an iso to the second
 export
@@ -97,13 +96,23 @@ unpacked = iso pack unpack
 
 ||| An `Iso` between a lazy variable and its strict form
 export
-motivated : Profunctor p => Iso {p} a b (Lazy a) (Lazy b)
-motivated = iso Delay Force
+motivated : Iso {p} a b (Lazy a) (Lazy b)
+motivated = let
+  snooze : a -> Lazy a
+  snooze x = Delay x
+  ring : Lazy b -> b
+  ring x = Force x
+  in iso snooze ring
 
 ||| An `Iso` between a strict variable and its lazy form
 export
-unmotivated : Profunctor p => Iso {p} (Lazy a) (Lazy b) a b
-unmotivated = iso Force Delay
+unmotivated : Iso {p} (Lazy a) (Lazy b) a b
+unmotivated = let
+  snooze : b -> Lazy b
+  snooze x = Delay x
+  ring : Lazy a -> a
+  ring x = Force x
+  in iso ring snooze
 
 ||| An `Iso` between an enumerable value and it's `Nat` representation
 export
