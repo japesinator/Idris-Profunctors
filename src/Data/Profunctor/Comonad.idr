@@ -5,7 +5,7 @@ import Control.Category
 import Data.Profunctor
 
 public export
-interface Functor w => Comonad (w : Type -> Type) where
+interface Functor w => Comonad (0 w : Type -> Type) where
   extract : w a -> a
 
   duplicate : w a -> w (w a)
