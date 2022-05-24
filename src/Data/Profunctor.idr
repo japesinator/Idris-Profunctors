@@ -3,6 +3,7 @@ module Data.Profunctor
 import Control.Monad.Identity
 import Control.Arrow
 import Control.Category
+import Data.Either
 import Data.Morphisms
 
 %default total
