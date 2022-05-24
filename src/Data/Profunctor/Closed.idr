@@ -88,7 +88,7 @@ data Environment : (Type -> Type -> Type) -> Type -> Type -> Type where
   ||| Environize $ Kleisli $ \x => Just $ reverse x
   ||| ````
   |||
-  Environize : ((z -> y) -> b) -> p x y -> (a -> z -> x) -> Environment p a b
+  Environize : ((c' -> b') -> b) -> p a' b' -> (a -> c' -> a') -> Environment p a b
 
 export
 implementation Profunctor p => Profunctor (Environment p) where
