@@ -114,15 +114,17 @@ unmotivated = let
   ring x = Force x
   in iso ring snooze
 
-||| An `Iso` between an enumerable value and it's `Nat` representation
-export
-enum : (Profunctor p, Enum a) => Iso' {p} Nat a
-enum = iso fromNat toNat
-
-||| An `Iso` between a `Nat` and its enumerable representation
-export
-denum : (Profunctor p, Enum a) => Iso' {p} a Nat
-denum = iso toNat fromNat
+-- TODO: Enum is currently commented out of base
+--
+-- ||| An `Iso` between an enumerable value and it's `Nat` representation
+-- export
+-- enum : (Profunctor p, Enum a) => Iso' {p} Nat a
+-- enum = iso fromNat toNat
+--
+-- ||| An `Iso` between a `Nat` and its enumerable representation
+-- export
+-- denum : (Profunctor p, Enum a) => Iso' {p} a Nat
+-- denum = iso toNat fromNat
 
 export
 mirrored : Profunctor p => Iso {p} (Either a b) (Either c d)
