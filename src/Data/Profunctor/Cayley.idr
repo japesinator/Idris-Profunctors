@@ -41,22 +41,22 @@ implementation (Functor f, Choice p) => Choice (Cayleyed f p) where
 export
 implementation (Applicative f, Category p) => Category (Cayleyed f p) where
   id                            = Cayley $ pure id
-  (Cayley fpbc) . (Cayley fpab) = Cayley $ liftA2 (.) fpbc fpab
+  (Cayley fpbc) . (Cayley fpab) = Cayley $ (.) <$> fpbc <*> fpab
 
 export
 implementation (Applicative f, Arrow p) => Arrow (Cayleyed f p) where
   arrow                       = Cayley . pure . arrow
   first                       = Cayley . map first  . runCayley
   second                      = Cayley . map second . runCayley
-  (Cayley ab) *** (Cayley cd) = Cayley $ liftA2 (***) ab cd
-  (Cayley ab) &&& (Cayley ac) = Cayley $ liftA2 (&&&) ab ac
+  (Cayley ab) *** (Cayley cd) = Cayley $ (***) <$> ab <*> cd
+  (Cayley ab) &&& (Cayley ac) = Cayley $ (&&&) <$> ab <*> ac
 
 export
 implementation (Applicative f, ArrowChoice p) => ArrowChoice (Cayleyed f p) where
   left                        = Cayley . map left . runCayley
   right                       = Cayley . map right . runCayley
-  (Cayley ab) +++ (Cayley cd) = Cayley $ liftA2 (+++) ab cd
-  (Cayley ac) \|/ (Cayley bc) = Cayley $ liftA2 (\|/) ac bc
+  (Cayley ab) +++ (Cayley cd) = Cayley $ (+++) <$> ab <*> cd
+  (Cayley ac) \|/ (Cayley bc) = Cayley $ (\|/) <$> ac <*> bc
 
 export
 implementation (Applicative f, ArrowLoop p) => ArrowLoop (Cayleyed f p) where
@@ -68,4 +68,4 @@ implementation (Applicative f, ArrowZero p) => ArrowZero (Cayleyed f p) where
 
 export
 implementation (Applicative f, ArrowPlus p) => ArrowPlus (Cayleyed f p) where
-  (Cayley f) <++> (Cayley g) = Cayley $ liftA2 (<++>) f g
+  (Cayley f) <++> (Cayley g) = Cayley $ (<++>) <$> f <*> g
