@@ -23,7 +23,7 @@ Simple t s a = t s s a a
 
 public export
 preIso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
-preIso {p} s t a b = p a b -> p s t
+preIso s t a b = p a b -> p s t
 
 ||| An isomorphism family.
 public export
