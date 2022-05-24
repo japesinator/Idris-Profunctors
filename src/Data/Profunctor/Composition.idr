@@ -10,7 +10,7 @@ public export
 data Procomposed : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
                    Type -> Type -> Type where
   ||| Compose two Profunctors
-  Procompose : {x,c,d : _} -> p x c -> q d x -> Procomposed p q d c
+  Procompose : {0 x,c,d : _} -> p x c -> q d x -> Procomposed p q d c
 
 export
 procomposed : Category p => Procomposed p p a b -> p a b
