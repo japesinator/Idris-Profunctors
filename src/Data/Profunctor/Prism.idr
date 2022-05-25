@@ -72,35 +72,35 @@ review = (runTagged .) . (. Tag)
 
 ||| A `Prism` for the left half of an `Either`
 export
-_l : Prisming p => Prism {p} (Either a c) (Either b c) a b
-_l = prism Left $ either Right (Left . Right)
+p_l : Prisming p => Prism {p} (Either a c) (Either b c) a b
+p_l = prism Left $ either Right (Left . Right)
 
 ||| A `Prism` for the right half of an `Either`
 export
-_r : Prisming p => Prism {p} (Either c a) (Either c b) a b
-_r = prism Right $ either (Left . Left) Right
+p_r : Prisming p => Prism {p} (Either c a) (Either c b) a b
+p_r = prism Right $ either (Left . Left) Right
 
 ||| A `Prism` for the just case of a `Maybe`
 export
-_j : Prisming p => Prism {p} (Maybe a) (Maybe b) a b
-_j = prism Just $ maybe (Left Nothing) Right
+p_j : Prisming p => Prism {p} (Maybe a) (Maybe b) a b
+p_j = prism Just $ maybe (Left Nothing) Right
 
 ||| A `Prism` for the nothing case of a `Maybe`
 export
-_n : Prisming p => Prism' {p} (Maybe a) ()
-_n = prism' (const Nothing) . maybe (Just ()) $ const Nothing
+p_n : Prisming p => Prism' {p} (Maybe a) ()
+p_n = prism' (const Nothing) . maybe (Just ()) $ const Nothing
 
 ||| A `Prism` for the left side of a `List`
 export
-_lCons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
-_lCons = prism (uncurry (::)) $ \aas => case aas of
+p_lCons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
+p_lCons = prism (uncurry (::)) $ \aas => case aas of
                                              (a::as) => Right (a, as)
                                              []      => Left  []
 
 ||| A `Prism` for the left side of a `String`
 export
-_strCons : Prisming p => Prism' {p} String (Char, String)
-_strCons = prism (uncurry strCons) $ \aas => case unpack aas of
+p_strCons : Prisming p => Prism' {p} String (Char, String)
+p_strCons = prism (uncurry strCons) $ \aas => case unpack aas of
                                                   (a::as) => Right (a, pack as)
                                                   []      => Left  ""
 
