@@ -186,7 +186,7 @@ _hVNth : (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
                                  (index i vs, HVect (deleteAt i vs))
 _hVNth n = lens' $ \v =>
            (believe_me . uncurry (insertAt' n), (index n v, deleteAt n v)) where
-  insertAt' : (i : Fin (S l)) -> a -> HVect us -> HVect (insertAt i a us)
+  insertAt' : (i : Fin (S k)) -> a -> HVect ws -> HVect (insertAt i a ws)
   insertAt' FZ     y xs      = y :: xs
   insertAt' (FS k) y (x::xs) = x :: insertAt' k y xs
   insertAt' (FS k) y []      = absurd k
