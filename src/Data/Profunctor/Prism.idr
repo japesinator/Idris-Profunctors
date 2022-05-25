@@ -14,7 +14,7 @@ interface Choice p => Prisming (p : Type -> Type -> Type) where
 
 export
 implementation Prisming Morphism where
-  costrength = Mor . either id . Delay . applyMor
+  costrength = Mor . either id . (\x => Delay x) . applyMor
 
 export
 implementation Monoid r => Prisming (Forgotten r) where
