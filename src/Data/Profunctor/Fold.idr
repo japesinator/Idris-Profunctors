@@ -167,27 +167,27 @@ sort = MkL id (flip $ merge . pure) [] where
 ||| Turns a binary function into a lazy `L`
 export
 L1 : (a -> a -> a) -> L a (Lazy (Maybe a))
-L1 s = MkL Delay (\m => Just . case m of Just x => s x; _ => id) Nothing
+L1 s = MkL (\x => Delay x) (\m => Just . case m of Just x => s x; _ => id) Nothing
 
 ||| Returns the first element of its input, if it exists
 export
 first : L a (Maybe a)
-first = map Force $ L1 const
+first = map (x => Force x) $ L1 const
 
 ||| Returns the last element of its input, if it exists
 export
 last : L a (Maybe a)
-last = map Force . L1 $ flip const
+last = map (x => Force x) . L1 $ flip const
 
 ||| Returns the maximum element of its input, if it exists
 export
 maximum : Ord a => L a (Maybe a)
-maximum = map Force $ L1 max
+maximum = map (x => Force x) $ L1 max
 
 ||| Returns the minimum element of its input, if it exists
 export
 minimum : Ord a => L a (Maybe a)
-minimum = map Force $ L1 min
+minimum = map (x => Force x) $ L1 min
 
 ||| Sums the elements of its input
 export
