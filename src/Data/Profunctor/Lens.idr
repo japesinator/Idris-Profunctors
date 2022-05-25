@@ -91,7 +91,9 @@ s ^? l = foldMapOf l Just s
 ||| Build a function to `map` from a Lens
 export
 over : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
-over = (applyMor .) . (. Mor)
+over = (applyMor .) . go
+  where go : (Lensing Morphism => Morphism a b -> Morphism s t) -> (a -> b) -> Morphism s t
+        go = (. Mor)
 
 infixr 4 &~
 ||| Infix synonym for `over`
