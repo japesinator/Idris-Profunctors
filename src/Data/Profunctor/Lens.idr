@@ -11,7 +11,7 @@ import Data.Vect
 
 ||| A `Strong` `Profunctor` that can be used in a `Lens`
 public export
-interface Strong p => Lensing (p : Type -> Type -> Type) where
+interface Strong p => Lensing (0 p : Type -> Type -> Type) where
   strength : p a b -> p (b -> t, a) t
   strength = (rmap $ uncurry id) . second'
 
