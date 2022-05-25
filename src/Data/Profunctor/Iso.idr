@@ -37,17 +37,17 @@ Iso' s a = Simple (Iso {p}) s a
 
 ||| Turns a coavariant and contravariant function into an `Iso`
 export
-iso : (s -> a) -> (b -> t) -> Iso {p} s t a b
+iso : (s -> a) -> (b -> t) -> Iso s t a b
 iso f g = dimap f g
 
 ||| Builds an `Iso` useful for constructing a `Lens`
 export
-lensIso : (s -> a) -> (s -> b -> t) -> Iso {p} s t (a, s) (b, s)
+lensIso : (s -> a) -> (s -> b -> t) -> Iso s t (a, s) (b, s)
 lensIso gt = iso (\s => (gt s, s)) . uncurry . flip
 
 ||| Builds an `Iso` useful for constructing a `Prism`
 export
-prismIso : (b -> t) -> (s -> Either t a) -> Iso {p} s t (Either t a) (Either t b)
+prismIso : (b -> t) -> (s -> Either t a) -> Iso s t (Either t a) (Either t b)
 prismIso f = flip iso $ either id $ Delay f
 
 ||| Convert an element of the first half of an iso to the second
@@ -62,40 +62,40 @@ backwards i = runTagged . i . Tag
 
 ||| An `Iso` between a function and it's arguments-flipped version
 export
-flipped : Iso {p} (a -> b -> c) (d -> e -> f)
-                  (b -> a -> c) (e -> d -> f)
+flipped : Iso (a -> b -> c) (d -> e -> f)
+              (b -> a -> c) (e -> d -> f)
 flipped = iso flip flip
 
 ||| An `Iso` between a function and it's curried version
 export
-curried : Iso {p} ((a, b) -> c) ((d, e) -> f)
-                  (a -> b -> c) (d -> e -> f)
+curried : Iso ((a, b) -> c) ((d, e) -> f)
+              (a -> b -> c) (d -> e -> f)
 curried = iso curry uncurry
 
 ||| An `Iso` between a function and it's uncurried version
 export
-uncurried : Iso {p} (a -> b -> c) (d -> e -> f)
-                    ((a, b) -> c) ((d, e) -> f)
+uncurried : Iso (a -> b -> c) (d -> e -> f)
+                ((a, b) -> c) ((d, e) -> f)
 uncurried = iso uncurry curry
 
 ||| An `Iso` between a list and its reverse
 export
-reversed : Iso {p} (List a) (List b) (List a) (List b)
+reversed : Iso (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
 
 ||| An `Iso` between a string and a list of its characters
 export
-packed : Iso' {p} String (List Char)
+packed : Iso' String (List Char)
 packed = iso unpack pack
 
 ||| An `Iso` between a list of characters and its string
 export
-unpacked : Iso' {p} (List Char) String
+unpacked : Iso' (List Char) String
 unpacked = iso pack unpack
 
 ||| An `Iso` between a lazy variable and its strict form
 export
-motivated : Iso {p} a b (Lazy a) (Lazy b)
+motivated : Iso a b (Lazy a) (Lazy b)
 motivated = let
   snooze : a -> Lazy a
   snooze x = Delay x
@@ -105,7 +105,7 @@ motivated = let
 
 ||| An `Iso` between a strict variable and its lazy form
 export
-unmotivated : Iso {p} (Lazy a) (Lazy b) a b
+unmotivated : Iso (Lazy a) (Lazy b) a b
 unmotivated = let
   snooze : b -> Lazy b
   snooze x = Delay x
@@ -126,6 +126,6 @@ unmotivated = let
 -- denum = iso toNat fromNat
 
 export
-mirrored : Iso {p} (Either a b) (Either c d)
-                   (Either b a) (Either d c)
+mirrored : Iso (Either a b) (Either c d)
+               (Either b a) (Either d c)
 mirrored = iso mirror mirror
