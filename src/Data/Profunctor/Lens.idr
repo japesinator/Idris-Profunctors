@@ -29,13 +29,13 @@ implementation Lensing Morphism where
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
 public export
-Lens : Lensing p => Type -> Type -> Type -> Type -> Type
-Lens {p} = preIso {p}
+Lens : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Lens s t a b = Lensing p => preIso {p} s t a b
 
 ||| A Lens family that does not change types
 public export
-Lens' : Lensing p => Type -> Type -> Type
-Lens' {p} = Simple $ Lens {p}
+Lens' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Lens' s a = Simple (Lens {p}) s a
 
 ||| Build a `Lens` out of a function. Note this takes one argument, not two
 export
