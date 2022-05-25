@@ -62,7 +62,10 @@ Getter s t a = Lens {p=Forgotten a} s t a
 ||| Build a function to look at stuff from a Lens
 export
 view : Getter s t a b -> s -> a
-view = runForget . (\f => f $ Forget id)
+view = runForget . go
+  where go : (Lensing (Forgotten a) =>
+             Forgotten a a b -> Forgotten a s t) -> Forgotten a s t
+        go f = f $ Forget id
 
 ||| Create a getter from arbitrary function `s -> a`.
 export
