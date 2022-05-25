@@ -1,6 +1,7 @@
 module Data.Profunctor.Prism
 
 import Data.Morphisms
+import Data.Maybe
 import Data.Profunctor
 import Data.Profunctor.Choice
 import Data.Profunctor.Iso
