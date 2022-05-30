@@ -69,7 +69,9 @@ preview l = runFirst . runForget (l . Forget $ MkFirst . Just)
 ||| Build a function from a `Prism` to `map`
 export
 review : Prism {p=Tagged} s t a b -> b -> t
-review = (runTagged .) . (. Tag)
+review = (runTagged .) . go
+  where go : (Prisming Tagged => Tagged a b -> Tagged s t) -> b -> Tagged s t
+        go = (. Tag)
 
 ||| A `Prism` for the left half of an `Either`
 export
