@@ -75,46 +75,46 @@ review = (runTagged .) . go
 
 ||| A `Prism` for the left half of an `Either`
 export
-p_l : Prisming p => Prism {p} (Either a c) (Either b c) a b
+p_l : Prism {p} (Either a c) (Either b c) a b
 p_l = prism Left $ either Right (Left . Right)
 
 ||| A `Prism` for the right half of an `Either`
 export
-p_r : Prisming p => Prism {p} (Either c a) (Either c b) a b
+p_r : Prism {p} (Either c a) (Either c b) a b
 p_r = prism Right $ either (Left . Left) Right
 
 ||| A `Prism` for the just case of a `Maybe`
 export
-p_j : Prisming p => Prism {p} (Maybe a) (Maybe b) a b
+p_j : Prism {p} (Maybe a) (Maybe b) a b
 p_j = prism Just $ maybe (Left Nothing) Right
 
 ||| A `Prism` for the nothing case of a `Maybe`
 export
-p_n : Prisming p => Prism' {p} (Maybe a) ()
+p_n : Prism' {p} (Maybe a) ()
 p_n = prism' (const Nothing) . maybe (Just ()) $ const Nothing
 
 ||| A `Prism` for the left side of a `List`
 export
-p_lCons : Prisming p => Prism {p} (List a) (List b) (a, List a) (b, List b)
+p_lCons : Prism {p} (List a) (List b) (a, List a) (b, List b)
 p_lCons = prism (uncurry (::)) $ \aas => case aas of
                                              (a::as) => Right (a, as)
                                              []      => Left  []
 
 ||| A `Prism` for the left side of a `String`
 export
-p_strCons : Prisming p => Prism' {p} String (Char, String)
+p_strCons : Prism' {p} String (Char, String)
 p_strCons = prism (uncurry strCons) $ \aas => case unpack aas of
                                                   (a::as) => Right (a, pack as)
                                                   []      => Left  ""
 
 ||| A prism for equality
 export
-only : (Eq a, Prisming p) => a -> Prism' {p} a ()
+only : Eq a => a -> Prism' {p} a ()
 only a = prism (const a) $ \x => if x == a then Left x else Right ()
 
 ||| A prism for near-equality, as determined by a given predicate
 export
-nearly : Prisming p => a -> (a -> Bool) -> Prism' {p} a ()
+nearly : a -> (a -> Bool) -> Prism' {p} a ()
 nearly a p = prism (const a) $ if p a then Left else const $ Right ()
 
 ||| Checks whether an object would match a given `Prism`
