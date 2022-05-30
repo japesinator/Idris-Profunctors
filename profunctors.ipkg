@@ -1,6 +1,6 @@
 package profunctors
 
-sourcedir = src
+sourcedir = "src"
 
 modules = Data.Profunctor
         , Data.Profunctor.Cayley
