@@ -3,7 +3,7 @@ module Data.Const
 %default total
 
 public export
-record Const a b where
+record Const (a, b : Type) where
   constructor MkConst
   runConst : a
 
