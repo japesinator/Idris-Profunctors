@@ -93,25 +93,20 @@ export
 unpacked : Iso' (List Char) String
 unpacked = iso pack unpack
 
+snooze : a -> Lazy a
+snooze x = Delay x
+ring : Lazy b -> b
+ring x = Force x
+
 ||| An `Iso` between a lazy variable and its strict form
 export
 motivated : Iso a b (Lazy a) (Lazy b)
-motivated = let
-  snooze : a -> Lazy a
-  snooze x = Delay x
-  ring : Lazy b -> b
-  ring x = Force x
-  in iso snooze ring
+motivated = iso snooze ring
 
 ||| An `Iso` between a strict variable and its lazy form
 export
 unmotivated : Iso (Lazy a) (Lazy b) a b
-unmotivated = let
-  snooze : b -> Lazy b
-  snooze x = Delay x
-  ring : Lazy a -> a
-  ring x = Force x
-  in iso ring snooze
+unmotivated = iso ring snooze
 
 -- TODO: Enum is currently commented out of base
 --
