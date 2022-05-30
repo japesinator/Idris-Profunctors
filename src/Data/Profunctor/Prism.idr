@@ -30,21 +30,21 @@ implementation Prisming Tagged where
 
 ||| A `Lens` for sum types instead of product types
 public export
-Prism : Prisming p => Type -> Type -> Type -> Type -> Type
-Prism {p} = preIso {p}
+Prism : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Prism s t a b = Prisming p => preIso {p} s t a b
 
 ||| A Prism that does not change types
 public export
-Prism' : Prisming p => Type -> Type -> Type
-Prism' {p} = Simple $ Prism {p}
+Prism' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Prism' s a = Simple (Prism {p}) s a
 
 ||| Build a `Prism` from two functions
 export
-prism : Prisming p => (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
+prism : (b -> t) -> (s -> Either t a) -> Prism {p} s t a b
 prism f g = lmap g . costrength . rmap f
 
 export
-prism' : Prisming p => (b -> s) -> (s -> Maybe a) -> Prism {p} s s a b
+prism' : (b -> s) -> (s -> Maybe a) -> Prism {p} s s a b
 prism' f g = prism f $ \s => maybe (Left s) Right $ g s
 
 public export
