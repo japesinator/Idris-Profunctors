@@ -1,10 +1,9 @@
 module Data.Profunctor.Traversal
 
+import Data.Morphisms
 import Data.Profunctor
 import Data.Profunctor.Wander
 import Data.Profunctor.Iso
-import Data.Morphisms
-import Data.Bitraversable
 import Control.Monad.Identity
 
 %default total
