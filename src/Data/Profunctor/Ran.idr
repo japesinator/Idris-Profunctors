@@ -5,9 +5,11 @@ import Data.Profunctor.Composition
 
 ||| The right Kan extension of a profunctor
 public export
-record Ran : (Type -> Type -> Type) -> (Type -> Type -> Type) ->
-             Type -> Type -> Type where
-  Run : {x : _} -> (runRan : p x a -> q x b) -> Ran p q a b
+record Ran (p : Type -> Type -> Type) (q : Type -> Type -> Type)
+           (a : Type) (b : Type) where
+  -- Run : {x : _} -> (runRan : p x a -> q x b) -> Ran p q a b
+  constructor Run
+  runRan : p x a -> q x b
 
 export
 implementation (Profunctor p, Profunctor q) => Profunctor (Ran p q) where
