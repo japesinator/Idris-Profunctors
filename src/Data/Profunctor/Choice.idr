@@ -14,7 +14,7 @@ import Control.Category
 
 ||| Generalized DownStar of a Costrong Functor
 public export
-interface Profunctor p => Choice (p : Type -> Type -> Type) where
+interface Profunctor p => Choice (0 p : Type -> Type -> Type) where
   ||| Like first' but with sum rather than product types
   |||
   ||| ````idris example
