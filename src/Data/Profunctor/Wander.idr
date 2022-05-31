@@ -11,8 +11,8 @@ import Data.Morphisms
 
 ||| Profunctors that support polymorphic traversals
 public export
-interface (Strong p, Choice p) => Wander (p : Type -> Type -> Type) where
-  wander : ({f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
+interface (Strong p, Choice p) => Wander (0 p : Type -> Type -> Type) where
+  wander : ({0 f : Type -> Type} -> Applicative f => (a -> f b) -> s -> f t) -> p a b -> p s t
 
 export
 Wander Morphism where
