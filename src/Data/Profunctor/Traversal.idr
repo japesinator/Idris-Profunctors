@@ -19,7 +19,7 @@ Traversal' s a = Simple (Traversal {p}) s a
 
 export
 traversed : Traversable t => Traversal {p} (t a) (t b) a b
-traversed {t} = wander $ traverse {f=f1} {t}
+traversed = wander $ traverse
 
 export
 both : Bitraversable r => Traversal {p=Morphism} (r a a) (r b b) a b
