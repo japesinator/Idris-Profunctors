@@ -1,4 +1,4 @@
-module Data.Profunctor.Fold
+module Data.Profunctor.Traversal
 
 import Data.Profunctor
 import Data.Profunctor.Wander
