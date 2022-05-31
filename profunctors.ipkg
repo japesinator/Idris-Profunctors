@@ -4,7 +4,7 @@ sourcedir = "src"
 
 modules = Data.Profunctor
         , Data.Profunctor.Cayley
-        , Data.Profunctor.Choice        
+        , Data.Profunctor.Choice
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
@@ -19,7 +19,5 @@ modules = Data.Profunctor
         , Data.Profunctor.Traversal
         , Data.Profunctor.Traversal.Index
         , Data.Verified.Profunctor
-
-pkgs = bifunctors
 
 opts = "-p contrib"
