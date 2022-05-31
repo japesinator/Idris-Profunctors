@@ -2,7 +2,6 @@ module Data.Profunctor.Ran
 
 import Data.Profunctor
 import Data.Profunctor.Composition
-import Data.Profunctor.Monad
 
 ||| The right Kan extension of a profunctor
 public export
