@@ -16,7 +16,7 @@ interface (Strong p, Choice p) => Wander (0 p : Type -> Type -> Type) where
 
 export
 Wander Morphism where
-  wander t (Mor f) = Mor $ runIdentity . t (%implementation) (Id . f)
+  wander t (Mor f) = Mor $ runIdentity . t (Id . f)
 
 export
 Applicative f => Wander (UpStarred f) where
@@ -24,4 +24,4 @@ Applicative f => Wander (UpStarred f) where
 
 export
 Monoid r => Wander (Forgotten r) where
-  wander t (Forget r) = Forget $ runConst . t (%implementation) (MkConst . r)
+  wander t (Forget f) = Forget $ runConst . t (MkConst . f)
