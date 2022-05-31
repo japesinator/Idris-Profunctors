@@ -27,9 +27,11 @@ export
 Ord a => At p (SortedSet a) a () where
   at x = lens get (flip update)
     where
+      get : SortedSet a -> Maybe ()
       get xs = if contains x xs then Just () else Nothing
+      update : Maybe () -> SortedSet a -> SortedSet a
       update Nothing = delete x
-      update (Just _) = insert x  
+      update (Just _) = insert x
 
 export
 sans : At Morphism m a b => a -> m -> m
