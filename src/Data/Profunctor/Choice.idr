@@ -1,9 +1,10 @@
 module Data.Profunctor.Choice
 
-import Data.Profunctor
-import Control.Category
-import Control.Arrow
+import Data.Either
 import Data.Morphisms
+import Data.Profunctor
+import Control.Arrow
+import Control.Category
 
 %default total
 
