@@ -6,12 +6,12 @@ import Data.Profunctor.Closed
 import Data.Profunctor.Iso
 
 public export
-Grate : Closed p => Type -> Type -> Type -> Type -> Type
-Grate {p} = preIso {p}
+Grate : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Grate s t a b = Closed p => preIso {p} s t a b
 
 public export
-Grate' : Closed p => Type -> Type -> Type
-Grate' {p} = Simple $ Grate {p}
+Grate' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Grate' s a = Simple (Grate {p}) s a
 
 export
 grate : (((s -> a) -> b) -> t) -> Grate {p=Morphism} s t a b
