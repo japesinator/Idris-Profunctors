@@ -9,7 +9,7 @@ import Data.Profunctor.Traversal
 %default total
 
 public export
-interface Wander p => Index (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) | m where
+interface Wander p => Index (0 p : Type -> Type -> Type) (0 m : Type) (0 a : Type) (0 b : Type) | m where
   ix : a -> Traversal' {p} m b
 
 export
