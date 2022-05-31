@@ -20,7 +20,7 @@ Wander Morphism where
 
 export
 Applicative f => Wander (UpStarred f) where
-  wander @{ap} t (UpStar f) = UpStar $ t ap f
+  wander t (UpStar u) = UpStar $ t u
 
 export
 Monoid r => Wander (Forgotten r) where
