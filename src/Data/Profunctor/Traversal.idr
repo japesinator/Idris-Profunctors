@@ -9,13 +9,13 @@ import Control.Monad.Identity
 %default total
 
 public export
-Traversal : Wander p => Type -> Type -> Type -> Type -> Type
-Traversal {p} = preIso {p}
+Traversal : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Traversal s t a b = Wander p => preIso {p} s t a b
 
 ||| A Traversal that does not change types
 public export
-Traversal' : Wander p => Type -> Type -> Type
-Traversal' {p} = Simple $ Traversal {p}
+Traversal' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Traversal' s a = Simple (Traversal {p}) s a
 
 export
 traversed : (Wander p, Traversable t) => Traversal {p} (t a) (t b) a b
