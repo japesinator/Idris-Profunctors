@@ -4,9 +4,10 @@ import Data.Morphisms
 import Data.SortedMap
 import Data.SortedSet
 import Data.Profunctor
-import Data.Profunctor.Wander
+import Data.Profunctor.Iso
 import Data.Profunctor.Lens
 import Data.Profunctor.Traversal.Index
+import Data.Profunctor.Wander
 
 %default total
 
