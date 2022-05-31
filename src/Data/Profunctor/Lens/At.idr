@@ -12,7 +12,7 @@ import Data.Profunctor.Traversal.Index
 
 ||| Allows adding and deleting elements from "container-like" types
 public export
-interface (Lensing p, Index p m a b) => At (p : Type -> Type -> Type) (m : Type) (a : Type) (b : Type) | m where
+interface (Lensing p, Index p m a b) => At (0 p : Type -> Type -> Type) (0 m : Type) (0 a : Type) (0 b : Type) | m where
   at : a -> Lens' {p} m (Maybe b)
 
 export
