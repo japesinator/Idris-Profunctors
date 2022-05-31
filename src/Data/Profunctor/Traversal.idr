@@ -18,7 +18,7 @@ Traversal' : {p : Type -> Type -> Type} -> Type -> Type -> Type
 Traversal' s a = Simple (Traversal {p}) s a
 
 export
-traversed : (Wander p, Traversable t) => Traversal {p} (t a) (t b) a b
+traversed : Traversable t => Traversal {p} (t a) (t b) a b
 traversed {t} = wander $ traverse {f=f1} {t}
 
 export
