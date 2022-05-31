@@ -16,7 +16,7 @@ interface Profunctor p => Closed (0 p : Type -> Type -> Type) where
   ||| closed $ DownStar $ show
   ||| ````
   |||
-  closed : {x : _} -> p a b -> p (x -> a) (x -> b)
+  closed : {0 x : _} -> p a b -> p (x -> a) (x -> b)
 
 export
 implementation Closed Morphism where
