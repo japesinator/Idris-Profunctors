@@ -12,7 +12,7 @@ import Control.Arrow
 
 ||| Generalized UpStar of a Strong Functor
 public export
-interface Profunctor p => Strong (p : Type -> Type -> Type) where
+interface Profunctor p => Strong (0 p : Type -> Type -> Type) where
   ||| Create a new Profunctor of tuples with first element from the original
   |||
   ||| ````idris example
