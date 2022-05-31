@@ -23,4 +23,4 @@ traversed = wander $ traverse
 
 export
 both : Bitraversable r => Traversal {p=Morphism} (r a a) (r b b) a b
-both (Mor f) = Mor $ runIdentity . bitraverse {f=Identity} (Id . f) (Id . f) 
+both (Mor f) = Mor $ runIdentity . bitraverse {f=Identity} (Id . f) (Id . f)
