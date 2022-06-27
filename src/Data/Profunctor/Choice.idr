@@ -36,7 +36,7 @@ interface Profunctor p => Choice (0 p : Type -> Type -> Type) where
 export
 implementation Monad m => Choice (Kleislimorphism m) where
   left'  f = Kleisli $ either (applyKleisli       $ f        >>> arrow Left)
-                              (applyKleisli       $ arrow id >>> arrow Right)
+                              (applyKleisli {f=m} $ arrow id >>> arrow Right)
   right' f = Kleisli $ either (applyKleisli {f=m} $ arrow id >>> arrow Left)
                               (applyKleisli       $ f        >>> arrow Right)
 
