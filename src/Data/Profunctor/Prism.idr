@@ -8,7 +8,7 @@ import Data.Profunctor.Iso
 
 ||| A `Choice` `Profunctor` that can be used in a `Prism`
 public export
-interface Choice p => Prisming (p : Type -> Type -> Type) where
+interface Choice p => Prisming (0 p : Type -> Type -> Type) where
   costrength : p a b -> p (Either b a) b
   costrength = rmap (either id id) . right'
 
