@@ -35,14 +35,14 @@ implementation Closed Zipping where
   closed (MkZipping f) = MkZipping $ \f1, f2, x => f (f1 x) (f2 x)
 
 ||| Closure adjoins a Closed structure to any Profunctor
+||| Adjoin a closed-structured Profunctor to a profunctor
+|||
+||| ````idris example
+||| Close $ closed $ DownStar $ show
+||| ````
+|||
 public export
 record Closure (p : Type -> Type -> Type) a b where
-  ||| Adjoin a closed-structured Profunctor to a profunctor
-  |||
-  ||| ````idris example
-  ||| Close $ closed $ DownStar $ show
-  ||| ````
-  |||
   constructor Close
   runClosure : p (x -> a) (x -> b)
 

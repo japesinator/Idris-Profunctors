@@ -8,11 +8,11 @@ import Data.Profunctor.Choice
 import Data.Profunctor.Unsafe
 
 ||| Converts Monads on standard types to Monads on Profunctors
+||| ````idris example
+||| Cayley $ Just $ Kleisli $ \x => Just $ reverse x
+||| ````
 public export
 record Cayleyed (f : Type -> Type) (p : Type -> Type -> Type) a b where
-  ||| ````idris example
-  ||| Cayley $ Just $ Kleisli $ \x => Just $ reverse x
-  ||| ````
   constructor Cayley
   runCayley : f (p a b)
 
