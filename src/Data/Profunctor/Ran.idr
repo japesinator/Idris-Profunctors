@@ -23,5 +23,5 @@ implementation Profunctor q => Functor (Ran p q a) where
 
 ||| Split up composed Profunctors by putting a Ran in the middle
 export
-curryRan : (Procomposed p q -/-> r) -> p -/-> Ran q r
-curryRan f a b p = Run $ \q => f a b $ Procompose p q
+curryRan : (Procomposed p q a b -> r a b) -> p a b -> Ran q r a b
+curryRan fpro pab = Run $ \qaa => fpro (Procompose pab qaa)
