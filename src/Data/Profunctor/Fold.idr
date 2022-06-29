@@ -129,6 +129,7 @@ null = MkL id (const $ const False) True
 export
 find : (a -> Bool) -> L a (Maybe a)
 find p = MkL id step Nothing where
+  step : Maybe a -> a -> Maybe a
   step x a = case x of Nothing => if p a then Just a else Nothing
                        _       => x
 
@@ -136,6 +137,7 @@ find p = MkL id step Nothing where
 export
 index : Nat -> L a (Maybe a)
 index i = MkL done step (Left 0) where
+  step : Either Nat a -> a -> Either Nat a
   step x = case x of Left j => if i == j then Right else const . Left $ S j
                      _      => const x
   done : Either Nat a -> Maybe a
