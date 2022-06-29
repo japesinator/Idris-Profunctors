@@ -164,32 +164,32 @@ export
 
 ||| A Lens for the first element of a tuple
 export
-_1 : Lens {p} (a, b) (x, b) a x
-_1 = lens' $ \(a,b) => (flip MkPair b, a)
+l_1 : Lens {p} (a, b) (x, b) a x
+l_1 = lens' $ \(a,b) => (flip MkPair b, a)
 
 ||| A Lens for the second element of a tuple
 export
-_2 : Lens {p} (b, a) (b, x) a x
-_2 = lens' $ \(b,a) => (MkPair b, a)
+l_2 : Lens {p} (b, a) (b, x) a x
+l_2 = lens' $ \(b,a) => (MkPair b, a)
 
 ||| A Lens for the first element of a non-empty vector
 export
-_vCons : Lens {p} (Vect (S n) a) (Vect (S n) b)
+l_vCons : Lens {p} (Vect (S n) a) (Vect (S n) b)
                   (a, Vect n a)  (b, Vect n b)
-_vCons = lens' $ \(x::xs) => (uncurry (::), (x,xs))
+l_vCons = lens' $ \(x::xs) => (uncurry (::), (x,xs))
 
 ||| A Lens for the nth element of a big-enough vector
 export
-_vNth : {m : Nat} -> (n : Fin (S m)) ->
+l_vNth : {m : Nat} -> (n : Fin (S m)) ->
         Lens {p} (Vect (S m) a) (Vect (S m) b) (a, Vect m a) (b, Vect m b)
-_vNth n = lens' $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
+l_vNth n = lens' $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
 
 ||| A Lens for the nth element of a big-enough heterogenous vector
 export
-_hVNth : (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
+l_hVNth : (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
                                  (index i us, HVect (deleteAt i us))
                                  (index i vs, HVect (deleteAt i vs))
-_hVNth n = lens' $ \v =>
+l_hVNth n = lens' $ \v =>
            (believe_me . uncurry (insertAt' n), (index n v, deleteAt n v)) where
   insertAt' : (i : Fin (S k)) -> a -> HVect ws -> HVect (insertAt i a ws)
   insertAt' FZ     y xs      = y :: xs
