@@ -79,23 +79,39 @@ implementation Semigroup m => Semigroup (L a m) where
   (<+>) = liftA2 (<+>)
 
 export
+implementation SemigroupV m => SemigroupV (L a m) where
+  semigroupOpIsAssociative = ?holeSemigroupL
+
+export
 implementation Monoid m => Monoid (L a m) where
   neutral = pure neutral
 
 export
+implementation MonoidV m => MonoidV (L a m) where
+  monoidNeutralIsNeutralL = ?holeMonoidLL
+  monoidNeutralIsNeutralR = ?holeMonoidLR
+
+export
 implementation Group m => Group (L a m) where
   inverse = map inverse
+  groupInverseIsInverseR = ?holeGroupL
 
 export
 implementation AbelianGroup m => AbelianGroup (L a m) where
+  groupOpIsCommutative = ?abelianGroupHoleL
 
 export
 implementation Ring m => Ring (L a m) where
   (<.>) = liftA2 (<.>)
+  ringOpIsAssociative = ?holeRingAssocL
+  ringOpIsDistributiveL = ?holeRingDistrLL
+  ringOpIsDistributiveR = ?holeRingDistrLR
 
 export
 implementation RingWithUnity m => RingWithUnity (L a m) where
   unity = pure unity
+  unityIsRingIdL = ?holeRingUnityLL
+  unityIsRingIdR = ?holeRingUnityLR
 
 -- The `Field` implementation won't type check, but it should exist
 
@@ -279,8 +295,17 @@ implementation Semigroup m => Semigroup (R a m) where
   (<+>) = liftA2 (<+>)
 
 export
+implementation SemigroupV m => SemigroupV (R a m) where
+  semigroupOpIsAssociative = ?holeSemigroupR
+
+export
 implementation Monoid m => Monoid (R a m) where
   neutral = pure neutral
+
+export
+implementation MonoidV m => MonoidV (R a m) where
+  monoidNeutralIsNeutralL = ?holeMonoidRL
+  monoidNeutralIsNeutralR = ?holeMonoidRR
 
 export
 implementation Num n => Num (R a n) where
@@ -300,17 +325,24 @@ implementation Abs n => Abs (R a n) where
 export
 implementation Group m => Group (R a m) where
   inverse = map inverse
+  groupInverseIsInverseR = ?holeGroupR
 
 export
 implementation AbelianGroup m => AbelianGroup (R a m) where
+  groupOpIsCommutative = ?holeAbelianCommR
 
 export
 implementation Ring m => Ring (R a m) where
   (<.>) = liftA2 (<.>)
+  ringOpIsAssociative = ?holeRingAssocR
+  ringOpIsDistributiveL = ?holeRingDistrRL
+  ringOpIsDistributiveR = ?holeRingDistrRR
 
 export
 implementation RingWithUnity m => RingWithUnity (R a m) where
   unity = pure unity
+  unityIsRingIdL = ?holeRingUnityRL
+  unityIsRingIdR = ?holeRingUnityRR
 
 ||| Convert an `L` to an `R`
 export
