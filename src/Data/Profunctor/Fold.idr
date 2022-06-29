@@ -162,7 +162,7 @@ fastNub {a} = MkL (flip snd $ the (List a) [])
 export
 sort : Ord a => L a (List a)
 sort = MkL id (flip $ merge . pure) [] where
-  merge : Ord a => List a -> List a -> List a
+  merge : List a -> List a -> List a
   merge xs [] = xs
   merge [] ys = ys
   merge (x :: xs) (y :: ys) = if x < y then x :: merge xs (y :: ys)
