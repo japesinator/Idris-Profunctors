@@ -76,7 +76,7 @@ implementation Monad (L a) where
 
 export
 implementation Semigroup m => Semigroup (L a m) where
-  x <+> y = (<+>) <$> x <*> y
+  (<+>) = liftA2 (<+>)
 
 export
 implementation Monoid m => Monoid (L a m) where
@@ -91,7 +91,7 @@ implementation AbelianGroup m => AbelianGroup (L a m) where
 
 export
 implementation Ring m => Ring (L a m) where
-  x <.> y = (<.>) <$> x <*> y
+  (<.>) = liftA2 (<.>)
 
 export
 implementation RingWithUnity m => RingWithUnity (L a m) where
@@ -101,13 +101,13 @@ implementation RingWithUnity m => RingWithUnity (L a m) where
 
 export
 implementation Num n => Num (L a n) where
-  x + y       = (+) <$> x <*> y
-  x * y       = (*) <$> x <*> y
+  (+)         = liftA2 (+)
+  (*)         = liftA2 (*)
   fromInteger = pure . fromInteger
 
 export
 implementation Neg n => Neg (L a n) where
-  x - y       = (-) <$> x <*> y
+  (-)         = liftA2 (-)
   negate      = map negate
 
 export
@@ -276,7 +276,7 @@ implementation Monad (R a) where
 
 export
 implementation Semigroup m => Semigroup (R a m) where
-  x <+> y = (<+>) <$> x <*> y
+  (<+>) = liftA2 (<+>)
 
 export
 implementation Monoid m => Monoid (R a m) where
@@ -284,13 +284,13 @@ implementation Monoid m => Monoid (R a m) where
 
 export
 implementation Num n => Num (R a n) where
-  x + y       = (+) <$> x <*> y
-  x * y       = (*) <$> x <*> y
+  (+)         = liftA2 (+)
+  (*)         = liftA2 (*)
   fromInteger = pure . fromInteger
 
 export
 implementation Neg n => Neg (R a n) where
-  x - y  = (-) <$> x <*> y
+  (-)         = liftA2 (-)
   negate      = map negate
 
 export
@@ -306,7 +306,7 @@ implementation AbelianGroup m => AbelianGroup (R a m) where
 
 export
 implementation Ring m => Ring (R a m) where
-  x <.> y = (<.>) <$> x <*> y
+  (<.>) = liftA2 (<.>)
 
 export
 implementation RingWithUnity m => RingWithUnity (R a m) where
