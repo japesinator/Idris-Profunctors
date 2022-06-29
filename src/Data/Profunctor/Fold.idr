@@ -6,6 +6,9 @@ import Data.Profunctor.Choice
 import Data.Profunctor.Prism
 import Data.SortedSet
 
+liftA2 : Applicative f => (a -> b -> c) -> f a -> f b -> f c
+liftA2 f x y = f <$> x <*> y
+
 ||| A leftwards fold
 public export
 data L a b = MkL (r -> b) (r -> a -> r) r
