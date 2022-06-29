@@ -222,9 +222,10 @@ runR (MkR k h z) = k . foldr h z
 
 ||| Run an `R` on a `Foldable` container, accumulating results
 export
-scanR : R a b -> List a -> List b
-scanR (MkR k h z) = map k . scan' where
-  scan' []      = pure z
+scanR : {r : Type} -> R a b -> List a -> List b
+scanR (MkR {r} k h z) = map k . scan' where
+  scan' : List a -> List r
+  scan' []      = z :: []
   scan' (x::xs) = let l = scan' xs in h x (case l of [] => z; (q::_) => q) :: l
 
 export
