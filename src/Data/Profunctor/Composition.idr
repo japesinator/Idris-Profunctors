@@ -31,6 +31,10 @@ export
 implementation (Sieve p f, Sieve q g) => Sieve (Procomposed p q) (g . f) using Functor.Compose where
   sieve (Procompose g f) d = sieve g <$> sieve f d
 
+export
+implementation (Cosieve p f, Cosieve q g) => Cosieve (Procomposed p q) (f . g) using Functor.Compose where
+  cosieve (Procompose g f) d = cosieve g $ cosieve f <$> d
+
 ||| The right Kan lift of one Profunctor along another
 public export
 record Rifted (p : Type -> Type -> Type) (q : Type -> Type -> Type) a b where
