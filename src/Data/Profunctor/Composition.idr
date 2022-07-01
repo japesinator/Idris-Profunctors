@@ -4,6 +4,7 @@ import Control.Arrow
 import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Closed
+import Data.Profunctor.Sieve
 
 ||| The composition of two Profunctors
 public export
@@ -25,6 +26,10 @@ implementation (Profunctor p, Profunctor q) => Profunctor (Procomposed p q) wher
 export
 implementation Profunctor p => Functor (Procomposed p q a) where
   map k (Procompose f g) = Procompose (rmap k f) g
+
+export
+implementation (Sieve p f, Sieve q g) => Sieve (Procomposed p q) (g . f) using Functor.Compose where
+  sieve (Procompose g f) d = sieve g <$> sieve f d
 
 ||| The right Kan lift of one Profunctor along another
 public export
