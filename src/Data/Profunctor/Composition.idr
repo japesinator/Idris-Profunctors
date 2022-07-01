@@ -4,7 +4,9 @@ import Control.Arrow
 import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Closed
+import Data.Profunctor.Choice
 import Data.Profunctor.Sieve
+import Data.Profunctor.Strong
 
 ||| The composition of two Profunctors
 public export
@@ -26,6 +28,20 @@ implementation (Profunctor p, Profunctor q) => Profunctor (Procomposed p q) wher
 export
 implementation Profunctor p => Functor (Procomposed p q a) where
   map k (Procompose f g) = Procompose (rmap k f) g
+
+export
+implementation (Strong p, Strong q) => Strong (Procomposed p q) where
+  first' (Procompose x y) = Procompose (first' x) (first' y)
+  second' (Procompose x y) = Procompose (second' x) (second' y)
+
+export
+implementation (Choice p, Choice q) => Choice (Procomposed p q) where
+  left' (Procompose x y) = Procompose (left' x) (left' y)
+  right' (Procompose x y) = Procompose (right' x) (right' y)
+
+export
+implementation (Closed p, Closed q) => Closed (Procomposed p q) where
+  closed (Procompose x y) = Procompose (closed x) (closed y)
 
 export
 implementation (Sieve p f, Sieve q g) => Sieve (Procomposed p q) (g . f) using Functor.Compose where
