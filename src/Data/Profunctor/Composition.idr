@@ -5,6 +5,7 @@ import Control.Category
 import Data.Profunctor
 import Data.Profunctor.Closed
 import Data.Profunctor.Choice
+import Data.Profunctor.Rep
 import Data.Profunctor.Sieve
 import Data.Profunctor.Strong
 
@@ -46,6 +47,10 @@ implementation (Closed p, Closed q) => Closed (Procomposed p q) where
 export
 implementation (Sieve p f, Sieve q g) => Sieve (Procomposed p q) (g . f) using Functor.Compose where
   sieve (Procompose g f) d = sieve g <$> sieve f d
+
+export
+implementation (Representable p f, Representable q g) => Representable (Procomposed p q) (g . f) using Functor.Compose where
+  tabulate f = Procompose (tabulate id) (tabulate f)
 
 export
 implementation (Cosieve p f, Cosieve q g) => Cosieve (Procomposed p q) (f . g) using Functor.Compose where
