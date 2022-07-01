@@ -14,6 +14,8 @@ modules = Data.Profunctor
         , Data.Profunctor.Lens
         , Data.Profunctor.Lens.At
         , Data.Profunctor.Prism
+        , Data.Profunctor.Rep
+        , Data.Profunctor.Sieve
         , Data.Profunctor.Strong
         , Data.Profunctor.Trace
         , Data.Profunctor.Traversal
