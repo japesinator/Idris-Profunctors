@@ -1,7 +1,7 @@
 module Data.Profunctor.Wander
 
+import Control.Applicative.Const
 import Control.Monad.Identity
-import Data.Const
 import Data.Profunctor
 import Data.Profunctor.Strong
 import Data.Profunctor.Choice
