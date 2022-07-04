@@ -5,6 +5,7 @@ import Control.Monad.Identity
 import Data.Morphisms
 
 import Data.Profunctor
+import Data.Profunctor.Iso
 import Data.Profunctor.Sieve
 import Data.Profunctor.Strong
 
@@ -27,3 +28,20 @@ implementation Functor f => Representable (UpStarred f) f where
 export
 implementation Representable (Forgotten r) (Const r) where
   tabulate = Forget . (runConst .)
+
+export
+tabulated : (Representable p f, Representable q g) => Iso (d -> f c) (d' -> g c') (p d c) (q d' c')
+tabulated = iso tabulate sieve
+
+export
+firstRep : Representable p (Pair a) => p a b -> p (a, c) (b, c)
+firstRep p = tabulate go
+  where go : (a, c) -> Pair a (Pair b c)
+        go (a, c) = (,c) <$> sieve p a
+
+export
+secondRep : Representable p (Pair c) => p a b -> p (c, a) (c, b)
+secondRep p = tabulate go
+  where go : (c, a) -> Pair c (Pair c b)
+        go (c, a) = (c,) <$> sieve p a
+
