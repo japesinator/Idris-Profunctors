@@ -14,12 +14,16 @@ modules = Data.Profunctor
         , Data.Profunctor.Lens
         , Data.Profunctor.Lens.At
         , Data.Profunctor.Prism
+        , Data.Profunctor.Ran
         , Data.Profunctor.Rep
         , Data.Profunctor.Sieve
         , Data.Profunctor.Strong
         , Data.Profunctor.Trace
         , Data.Profunctor.Traversal
         , Data.Profunctor.Traversal.Index
+        , Data.Profunctor.Unsafe
+        , Data.Profunctor.Wander
+        , Data.Proxy
         , Data.Verified.Profunctor
 
 opts = "-p contrib"
