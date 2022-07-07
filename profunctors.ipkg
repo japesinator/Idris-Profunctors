@@ -8,6 +8,7 @@ modules = Data.Profunctor
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
+        , Data.Profunctor.Comonad
         , Data.Profunctor.Fold
         , Data.Profunctor.Grate
         , Data.Profunctor.Iso
@@ -26,4 +27,6 @@ modules = Data.Profunctor
         , Data.Proxy
         , Data.Verified.Profunctor
 
-opts = "-p contrib"
+depends = comonad
+
+opts = "-p contrib comonad"
