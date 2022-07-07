@@ -5,11 +5,6 @@ import Control.Category
 import Control.Comonad
 import Data.Profunctor
 
-export
-implementation Comonad (Tagged a) where
-  duplicate = Tag
-  extract = runTagged
-
 public export
 record Cokleislimorphism (w : Type -> Type) a b where
   constructor Cokleisli

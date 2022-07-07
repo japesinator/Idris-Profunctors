@@ -3,6 +3,7 @@ module Data.Profunctor
 import Control.Monad.Identity
 import Control.Arrow
 import Control.Category
+import Control.Comonad
 import Data.Either
 import Data.Morphisms
 
@@ -61,6 +62,11 @@ implementation Profunctor Tagged where
 export
 implementation Functor (Tagged a) where
   map = rmap
+
+export
+implementation Comonad (Tagged a) where
+  duplicate = Tag
+  extract = runTagged
 
 -- UpStar
 -- {{{
