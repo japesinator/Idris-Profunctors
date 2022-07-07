@@ -14,6 +14,7 @@ modules = Data.Profunctor
         , Data.Profunctor.Iso
         , Data.Profunctor.Lens
         , Data.Profunctor.Lens.At
+        , Data.Profunctor.Monad
         , Data.Profunctor.Prism
         , Data.Profunctor.Ran
         , Data.Profunctor.Rep
