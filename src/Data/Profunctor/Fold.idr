@@ -135,8 +135,21 @@ implementation Monoid m => Monoid (L a m) where
 
 export
 implementation MonoidV m => MonoidV (L a m) where
-  monoidNeutralIsNeutralL = ?holeMonoidLL
-  monoidNeutralIsNeutralR = ?holeMonoidLR
+  monoidNeutralIsNeutralL l@(MkL k h z) = let
+    neut : L a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> neut) fo = runL l fo
+    prf fo = rewrite runLSemigroupDistributive l neut fo
+          in monoidNeutralIsNeutralL (k (foldl h z fo))
+
+    in foldExtensionality (l <+> neut) l prf
+  monoidNeutralIsNeutralR l@(MkL k h z) = let
+    neut : L a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runL (neut <+> l) fo = runL l fo
+    prf fo = rewrite runLSemigroupDistributive neut l fo
+          in monoidNeutralIsNeutralR (k (foldl h z fo))
+    in foldExtensionality (neut <+> l) l prf
 
 export
 implementation Group m => Group (L a m) where
@@ -372,8 +385,21 @@ implementation Monoid m => Monoid (R a m) where
 
 export
 implementation MonoidV m => MonoidV (R a m) where
-  monoidNeutralIsNeutralL = ?holeMonoidRL
-  monoidNeutralIsNeutralR = ?holeMonoidRR
+  monoidNeutralIsNeutralL r@(MkR k h z) = let
+    neut : R a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runR (r <+> neut) fo = runR r fo
+    prf fo = rewrite runRSemigroupDistributive r neut fo
+            in monoidNeutralIsNeutralL (k (foldr h z fo))
+    in foldExtensionality (r <+> neut) r prf
+
+  monoidNeutralIsNeutralR r@(MkR k h z) = let
+    neut : R a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runR (neut <+> r) fo = runR r fo
+    prf fo = rewrite runRSemigroupDistributive neut r fo
+            in monoidNeutralIsNeutralR (k (foldr h z fo))
+    in foldExtensionality (neut <+> r) r prf
 
 export
 implementation Num n => Num (R a n) where
