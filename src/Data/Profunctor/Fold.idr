@@ -164,7 +164,12 @@ implementation Group m => Group (L a m) where
 
 export
 implementation AbelianGroup m => AbelianGroup (L a m) where
-  groupOpIsCommutative = ?abelianGroupHoleL
+  groupOpIsCommutative l@(MkL d g u) r@(MkL f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> r) fo = runL (r <+> l) fo
+      prf fo = rewrite runLSemigroupDistributive l r fo
+            in rewrite groupOpIsCommutative (d (foldl g u fo)) (f (foldl j w fo))
+            in sym (runLSemigroupDistributive r l fo)
+    in foldExtensionality (l <+> r) (r <+> l) prf
 
 export
 implementation Ring m => Ring (L a m) where
@@ -435,7 +440,12 @@ implementation Group m => Group (R a m) where
 
 export
 implementation AbelianGroup m => AbelianGroup (R a m) where
-  groupOpIsCommutative = ?holeAbelianCommR
+  groupOpIsCommutative l@(MkR d g u) r@(MkR f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runR (l <+> r) fo = runR (r <+> l) fo
+      prf fo = rewrite runRSemigroupDistributive l r fo
+            in rewrite groupOpIsCommutative (d (foldr g u fo)) (f (foldr j w fo))
+            in sym (runRSemigroupDistributive r l fo)
+    in foldExtensionality (l <+> r) (r <+> l) prf
 
 export
 implementation Ring m => Ring (R a m) where
