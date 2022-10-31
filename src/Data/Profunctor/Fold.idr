@@ -175,9 +175,32 @@ mutual
   export
   implementation Ring m => Ring (L a m) where
     (<.>) = liftA2 (<.>)
-    ringOpIsAssociative = ?holeRingAssocL
-    ringOpIsDistributiveL = ?holeRingDistrLL
-    ringOpIsDistributiveR = ?holeRingDistrLR
+    ringOpIsAssociative l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> (c <.> r)) fo = runL ((l <.> c) <.> r) fo
+         prf fo = rewrite runLRingDistributive l (c <.> r) fo
+               in rewrite runLRingDistributive c r fo
+               in rewrite ringOpIsAssociative (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l c fo)
+               in sym (runLRingDistributive (l <.> c) r fo)
+      in foldExtensionality (l <.> (c <.> r)) ((l <.> c) <.> r) prf
+    ringOpIsDistributiveL l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> (c <+> r)) fo = runL ((l <.> c) <+> (l <.> r)) fo
+         prf fo = rewrite runLRingDistributive l (c <+> r) fo
+               in rewrite runLSemigroupDistributive c r fo
+               in rewrite ringOpIsDistributiveL (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l c fo)
+               in rewrite sym (runLRingDistributive l r fo)
+               in sym (runLSemigroupDistributive (l <.> c) (l <.> r) fo)
+      in foldExtensionality (l <.> (c <+> r)) ((l <.> c) <+> (l <.> r)) prf
+    ringOpIsDistributiveR l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL ((l <+> c) <.> r) fo = runL ((l <.> r) <+> (c <.> r)) fo
+         prf fo = rewrite runLRingDistributive (l <+> c) r fo
+               in rewrite runLSemigroupDistributive l c fo
+               in rewrite ringOpIsDistributiveR (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l r fo)
+               in rewrite sym (runLRingDistributive c r fo)
+               in sym (runLSemigroupDistributive (l <.> r) (c <.> r) fo)
+      in foldExtensionality ((l <+> c) <.> r) ((l <.> r) <+> (c <.> r)) prf
 
   public export
   runLRingDistributive : (FoldableV t, Ring m) => (ll, lr : L a m) -> (fo : t a) -> runL (ll <.> lr) fo = runL ll fo <.> runL lr fo
@@ -463,9 +486,33 @@ mutual
   export
   implementation Ring m => Ring (R a m) where
     (<.>) = liftA2 (<.>)
-    ringOpIsAssociative = ?holeRingAssocR
-    ringOpIsDistributiveL = ?holeRingDistrRL
-    ringOpIsDistributiveR = ?holeRingDistrRR
+    ringOpIsAssociative l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR (l <.> (c <.> r)) fo = runR ((l <.> c) <.> r) fo
+         prf fo = rewrite runRRingDistributive l (c <.> r) fo
+               in rewrite runRRingDistributive c r fo
+               in rewrite ringOpIsAssociative (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l c fo)
+               in sym (runRRingDistributive (l <.> c) r fo)
+      in foldExtensionality (l <.> (c <.> r)) ((l <.> c) <.> r) prf
+    ringOpIsDistributiveL l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR (l <.> (c <+> r)) fo = runR ((l <.> c) <+> (l <.> r)) fo
+         prf fo = rewrite runRRingDistributive l (c <+> r) fo
+               in rewrite runRSemigroupDistributive c r fo
+               in rewrite ringOpIsDistributiveL (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l c fo)
+               in rewrite sym (runRRingDistributive l r fo)
+               in sym (runRSemigroupDistributive (l <.> c) (l <.> r) fo)
+      in foldExtensionality (l <.> (c <+> r)) ((l <.> c) <+> (l <.> r)) prf
+
+    ringOpIsDistributiveR l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR ((l <+> c) <.> r) fo = runR ((l <.> r) <+> (c <.> r)) fo
+         prf fo = rewrite runRRingDistributive (l <+> c) r fo
+               in rewrite runRSemigroupDistributive l c fo
+               in rewrite ringOpIsDistributiveR (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l r fo)
+               in rewrite sym (runRRingDistributive c r fo)
+               in sym (runRSemigroupDistributive (l <.> r) (c <.> r) fo)
+      in foldExtensionality ((l <+> c) <.> r) ((l <.> r) <+> (c <.> r)) prf
 
   public export
   runRRingDistributive : (FoldableV t, Ring m) => (rl, rr : R a m) -> (li : t a) -> runR (rl <.> rr) li = runR rl li <.> runR rr li
