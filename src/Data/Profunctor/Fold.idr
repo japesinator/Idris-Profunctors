@@ -5,6 +5,7 @@ import Data.Profunctor
 import Data.Profunctor.Choice
 import Data.Profunctor.Prism
 import Data.SortedSet
+import Data.Verified.Foldable
 
 liftA2 : Applicative f => (a -> b -> c) -> f a -> f b -> f c
 liftA2 f x y = f <$> x <*> y
@@ -12,6 +13,11 @@ liftA2 f x y = f <$> x <*> y
 public export
 interface Fold f where
   run : Foldable t => f a b -> t a -> b
+
+  ||| Two folds are equal if they are point wise equal in their ``run`` function.
+  ||| We need this axiom because otherwise the Applicative instance would be unlawful.
+  ||| The requirement for a ``FoldableV`` instance stems from the necessity to destruct ``t``.
+  foldExtensionality : Fold f => (fa, fb : f a b) -> (forall t. FoldableV t => (l : t a) -> run fa l = run fb l) -> fa = fb
 
 ||| A leftwards fold
 public export
@@ -37,6 +43,7 @@ scanL (MkL k h z) (x::xs) = k (h z x) :: scanL (MkL k h (h z x)) xs
 export
 implementation Fold L where
   run = runL
+  foldExtensionality a b = believe_me
 
 export
 implementation Profunctor L where
@@ -257,6 +264,7 @@ scanR (MkR {r} k h z) = map k . scan' where
 export
 implementation Fold R where
   run = runR
+  foldExtensionality a b = believe_me
 
 export
 implementation Profunctor R where
