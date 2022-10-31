@@ -216,8 +216,20 @@ mutual
 export
 implementation RingWithUnity m => RingWithUnity (L a m) where
   unity = pure unity
-  unityIsRingIdL = ?holeRingUnityLL
-  unityIsRingIdR = ?holeRingUnityLR
+  unityIsRingIdL l@(MkL d g u) = let
+      uni : L a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> uni) fo = runL l fo
+      prf fo = rewrite runLRingDistributive l uni fo
+            in unityIsRingIdL (d (foldl g u fo))
+    in foldExtensionality (l <.> uni) l prf
+  unityIsRingIdR l@(MkL d g u) = let
+      uni : L a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runL (uni <.> l) fo = runL l fo
+      prf fo = rewrite runLRingDistributive uni l fo
+            in unityIsRingIdR (d (foldl g u fo))
+    in foldExtensionality (uni <.> l) l prf
 
 -- The `Field` implementation won't type check, but it should exist
 
@@ -528,8 +540,20 @@ mutual
 export
 implementation RingWithUnity m => RingWithUnity (R a m) where
   unity = pure unity
-  unityIsRingIdL = ?holeRingUnityRL
-  unityIsRingIdR = ?holeRingUnityRR
+  unityIsRingIdL r@(MkR d g u) = let
+      uni : R a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runR (r <.> uni) fo = runR r fo
+      prf fo = rewrite runRRingDistributive r uni fo
+            in unityIsRingIdL (d (foldr g u fo))
+    in foldExtensionality (r <.> uni) r prf
+  unityIsRingIdR r@(MkR d g u) = let
+      uni : R a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runR (uni <.> r) fo = runR r fo
+      prf fo = rewrite runRRingDistributive uni r fo
+            in unityIsRingIdR (d (foldr g u fo))
+    in foldExtensionality (uni <.> r) r prf
 
 ||| Convert an `L` to an `R`
 export
