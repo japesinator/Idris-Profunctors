@@ -1,6 +1,7 @@
 module Data.Verified.Foldable
 
 import Control.Applicative.Const
+import Data.List.Alternating
 import Data.List.Lazy
 import Data.List1
 import Data.SnocList
@@ -117,4 +118,22 @@ implementation FoldableV LazyList where
     in foldlEmptyIndependent f xs z
   toListNeutralR f z [] = Refl
   toListNeutralR f z (x::xs) = cong (f x) (toListNeutralR f z xs)
+
+export
+implementation FoldableV (Odd b) where
+  toListNeutralL f z odd = let
+    foldlEmptyIndependent : (f : r -> a -> r) -> (xs : Odd b a) -> (z : r) -> foldl f z xs = foldl f z (toList xs)
+    foldlEmptyIndependent f (x :: xs) with (xs)
+      _ | Nil = \_ => Refl
+      _ | (y :: ys) with (ys)
+        _ | (n :: ns) with (ns)
+          _ | Nil = \_ => Refl
+          _ | (m :: ms) = \z => foldlEmptyIndependent f ms (f (f z y) m)
+    in foldlEmptyIndependent f odd z
+  toListNeutralR f z (x :: xs) with (xs)
+    _ | Nil = Refl
+    _ | (y :: ys) with (ys)
+      _ | (n :: ns) with (ns)
+        _ | Nil = Refl
+        _ | (m :: ms) = let rec = toListNeutralR f z ms in cong (f y) (cong (f m) (toListNeutralR f z ms))
 
