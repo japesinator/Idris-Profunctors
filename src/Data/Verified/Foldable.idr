@@ -1,5 +1,10 @@
 module Data.Verified.Foldable
 
+import Control.Applicative.Const
+import Data.List1
+import Data.Validated
+import Text.Bounded
+
 %default total
 
 public export
@@ -26,3 +31,24 @@ implementation FoldableV List where
   toListNeutralL f z fo = Refl
   toListNeutralR f z fo = Refl
 
+export
+implementation FoldableV (Const a) where
+  toListNeutralL f z xs = Refl
+  toListNeutralR f z xs = Refl
+
+export
+implementation FoldableV List1 where
+  toListNeutralL f z (x ::: xs) = Refl
+  toListNeutralR f z (x ::: xs) = Refl
+
+export
+implementation FoldableV (Validated e) where
+  toListNeutralL f z (Valid x) = Refl
+  toListNeutralL f z (Invalid _) = Refl
+  toListNeutralR f z (Valid x) = Refl
+  toListNeutralR f z (Invalid _) = Refl
+
+export
+implementation FoldableV WithBounds where
+  toListNeutralL f z xs = Refl
+  toListNeutralR f z xs = Refl
