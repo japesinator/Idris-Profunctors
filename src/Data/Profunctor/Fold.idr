@@ -106,6 +106,17 @@ export
 implementation Semigroup m => Semigroup (L a m) where
   (<+>) = liftA2 (<+>)
 
+public export
+runLSemigroupDistributive : (FoldableV t, Semigroup m) => (ll, lr : L a m) -> (fo : t a) -> runL (ll <+> lr) fo = runL ll fo <+> runL lr fo
+runLSemigroupDistributive (MkL {r=r1} d g u) (MkL {r=r2} e h v) fo = let
+    prf : (xs : List a) -> (u : r1) -> (v : r2) -> foldl (L.step g h) (u, v) xs = (foldl g u xs, foldl h v xs)
+    prf []      = \_, _ => Refl
+    prf (x::xs) = \y, z => prf xs (g y x) (h z x)
+ in rewrite toListNeutralL g u fo
+ in rewrite toListNeutralL h v fo
+ in rewrite toListNeutralL (step g h) (u, v) fo
+ in cong (Fold.finish (\n, m => d n <+> m) e) (prf (toList fo) u v)
+
 export
 implementation SemigroupV m => SemigroupV (L a m) where
   semigroupOpIsAssociative = ?holeSemigroupL
@@ -324,6 +335,17 @@ implementation Monad (R a) where
 export
 implementation Semigroup m => Semigroup (R a m) where
   (<+>) = liftA2 (<+>)
+
+public export
+runRSemigroupDistributive : (FoldableV t, Semigroup m) => (rl, rr : R a m) -> (li : t a) -> runR (rl <+> rr) li = runR rl li <+> runR rr li
+runRSemigroupDistributive (MkR {r=r1} d g u) (MkR {r=r2} e h v) fo = let
+    prf : (xs : List a) -> foldr (R.step g h) (u, v) xs = (foldr g u xs, foldr h v xs)
+    prf [] = Refl
+    prf (x::xs) = cong (step g h x) (prf xs)
+ in rewrite toListNeutralR g u fo
+ in rewrite toListNeutralR h v fo
+ in rewrite toListNeutralR (step g h) (u, v) fo
+ in cong (Fold.finish (\n, m => d n <+> m) e) (prf (toList fo))
 
 export
 implementation SemigroupV m => SemigroupV (R a m) where
