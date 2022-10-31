@@ -5,6 +5,7 @@ import Data.List.Lazy
 import Data.List1
 import Data.SnocList
 import Data.SortedSet
+import Data.SortedMap
 import Data.Validated
 import Data.Vect
 import Data.Vect.Properties.Foldr
@@ -84,6 +85,11 @@ namespace SortedSet
   implementation FoldableV SortedSet where
     toListNeutralL f z xs = cong (foldl {t=List} f z) (toListRedundant (SortedSet.toList xs))
     toListNeutralR f z xs = cong (foldr {t=List} f z) (toListRedundant (SortedSet.toList xs))
+
+  export
+  implementation FoldableV (SortedMap k) where
+    toListNeutralL f z xs = cong (foldl {t=List} f z) (toListRedundant (values xs))
+    toListNeutralR f z xs = cong (foldr {t=List} f z) (toListRedundant (values xs))
 
 export
 implementation FoldableV SnocList where
