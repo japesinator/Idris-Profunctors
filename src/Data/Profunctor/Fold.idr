@@ -118,8 +118,16 @@ runLSemigroupDistributive (MkL {r=r1} d g u) (MkL {r=r2} e h v) fo = let
  in cong (Fold.finish (\n, m => d n <+> m) e) (prf (toList fo) u v)
 
 export
-implementation SemigroupV m => SemigroupV (L a m) where
-  semigroupOpIsAssociative = ?holeSemigroupL
+implementation (SemigroupV m) => SemigroupV (L a m) where
+  semigroupOpIsAssociative l@(MkL {r=r1} d g u) c@(MkL {r=r2} e h v) r@(MkL {r=r3} f j w)
+    = let
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> (c <+> r)) fo = runL ((l <+> c) <+> r) fo
+      prf fo = rewrite runLSemigroupDistributive l (c <+> r) fo
+            in rewrite runLSemigroupDistributive c r fo
+            in rewrite semigroupOpIsAssociative (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+            in rewrite sym (runLSemigroupDistributive l c fo)
+            in sym (runLSemigroupDistributive (l <+> c) r fo)
+    in foldExtensionality (l <+> (c <+> r)) ((l <+> c) <+> r) prf
 
 export
 implementation Monoid m => Monoid (L a m) where
@@ -349,7 +357,14 @@ runRSemigroupDistributive (MkR {r=r1} d g u) (MkR {r=r2} e h v) fo = let
 
 export
 implementation SemigroupV m => SemigroupV (R a m) where
-  semigroupOpIsAssociative = ?holeSemigroupR
+  semigroupOpIsAssociative l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runR (l <+> (c <+> r)) fo = runR ((l <+> c) <+> r) fo
+      prf fo = rewrite runRSemigroupDistributive l (c <+> r) fo
+            in rewrite runRSemigroupDistributive c r fo
+            in rewrite semigroupOpIsAssociative (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+            in rewrite sym (runRSemigroupDistributive l c fo)
+            in sym (runRSemigroupDistributive (l <+> c) r fo)
+      in foldExtensionality (l <+> (c <+> r)) ((l <+> c) <+> r) prf
 
 export
 implementation Monoid m => Monoid (R a m) where
