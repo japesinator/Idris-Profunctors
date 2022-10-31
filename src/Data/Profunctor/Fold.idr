@@ -154,7 +154,13 @@ implementation MonoidV m => MonoidV (L a m) where
 export
 implementation Group m => Group (L a m) where
   inverse = map inverse
-  groupInverseIsInverseR = ?holeGroupL
+  groupInverseIsInverseR l@(MkL k h z) = let
+       neut : L a m
+       neut = neutral
+       prf : forall t. FoldableV t => (fo : t a) -> runL (inverse l <+> l) fo = runL neut fo
+       prf fo = rewrite runLSemigroupDistributive (inverse l) l fo
+             in groupInverseIsInverseR (k (foldl h z fo))
+    in foldExtensionality (inverse l <+> l) neut prf
 
 export
 implementation AbelianGroup m => AbelianGroup (L a m) where
@@ -419,7 +425,13 @@ implementation Abs n => Abs (R a n) where
 export
 implementation Group m => Group (R a m) where
   inverse = map inverse
-  groupInverseIsInverseR = ?holeGroupR
+  groupInverseIsInverseR r@(MkR k h z) = let
+       neut : R a m
+       neut = neutral
+       prf : forall t. FoldableV t => (fo : t a) -> runR (inverse r <+> r) fo = runR neut fo
+       prf fo = rewrite runRSemigroupDistributive (inverse r) r fo
+             in groupInverseIsInverseR (k (foldr h z fo))
+    in foldExtensionality (inverse r <+> r) neut prf
 
 export
 implementation AbelianGroup m => AbelianGroup (R a m) where
