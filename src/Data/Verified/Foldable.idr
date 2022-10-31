@@ -3,6 +3,8 @@ module Data.Verified.Foldable
 import Control.Applicative.Const
 import Data.List1
 import Data.Validated
+import Data.Vect
+import Data.Vect.Properties.Foldr
 import Text.Bounded
 
 %default total
@@ -52,3 +54,21 @@ export
 implementation FoldableV WithBounds where
   toListNeutralL f z xs = Refl
   toListNeutralR f z xs = Refl
+
+export
+implementation FoldableV (Vect n) where
+  toListNeutralL f z xs = let
+      foldlEmptyIndependent : (f : r -> a -> r) -> (xs : Vect m a) -> (z : r) -> foldl f z xs = foldl f z (toList xs)
+      foldlEmptyIndependent f Nil = \_ => Refl
+      foldlEmptyIndependent f (y :: ys) = let homomorphism = foldrVectHomomorphism.cons {A=a, F=(::), E=[]}
+                                       in \z => rewrite foldlEmptyIndependent f ys (f z y)
+                                             in cong (foldl f z) (sym (homomorphism y ys))
+    in foldlEmptyIndependent f xs z
+  toListNeutralR f z Nil = Refl
+  toListNeutralR f z (x :: xs) = let
+    vectHomomorphismCons = foldrVectHomomorphism.cons {A=a, F=(::), E=[]}
+    vectHomomorphismF = foldrVectHomomorphism.cons {A=a, F=f, E=z}
+    in rewrite vectHomomorphismCons x xs
+    in rewrite sym (toListNeutralR f z xs)
+    in vectHomomorphismF x xs
+
