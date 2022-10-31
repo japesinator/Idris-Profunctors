@@ -9,6 +9,10 @@ import Data.SortedSet
 liftA2 : Applicative f => (a -> b -> c) -> f a -> f b -> f c
 liftA2 f x y = f <$> x <*> y
 
+public export
+interface Fold f where
+  run : Foldable t => f a b -> t a -> b
+
 ||| A leftwards fold
 public export
 data L a b = MkL (r -> b) (r -> a -> r) r
@@ -29,6 +33,10 @@ export
 scanL : L a b -> List a -> List b
 scanL (MkL k _ z) []      = pure $ k z
 scanL (MkL k h z) (x::xs) = k (h z x) :: scanL (MkL k h (h z x)) xs
+
+export
+implementation Fold L where
+  run = runL
 
 export
 implementation Profunctor L where
@@ -245,6 +253,10 @@ scanR (MkR {r} k h z) = map k . scan' where
   scan' : List a -> List r
   scan' []      = z :: []
   scan' (x::xs) = let l = scan' xs in h x (case l of [] => z; (q::_) => q) :: l
+
+export
+implementation Fold R where
+  run = runR
 
 export
 implementation Profunctor R where
