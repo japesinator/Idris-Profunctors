@@ -1,7 +1,9 @@
 module Data.Verified.Foldable
 
 import Control.Applicative.Const
+import Data.List.Lazy
 import Data.List1
+import Data.SnocList
 import Data.SortedSet
 import Data.Validated
 import Data.Vect
@@ -82,4 +84,31 @@ namespace SortedSet
   implementation FoldableV SortedSet where
     toListNeutralL f z xs = cong (foldl {t=List} f z) (toListRedundant (SortedSet.toList xs))
     toListNeutralR f z xs = cong (foldr {t=List} f z) (toListRedundant (SortedSet.toList xs))
+
+export
+implementation FoldableV SnocList where
+  toListNeutralL f z sn = snocFoldlAsListFoldl f z sn
+  toListNeutralR f z sn = let
+    foldrListAppendDistributive : (f : a -> r -> r) -> (z : r) -> (l1, l2 : List a)
+                               -> foldr f (foldr f z l2) l1 = foldr f z (l1 ++ l2)
+    foldrListAppendDistributive f z [] = \_ => Refl
+    foldrListAppendDistributive f z (x::xs) = \li => cong (f x) (foldrListAppendDistributive f z xs li)
+
+    snocFoldrAsListFoldr : (f : a -> r -> r) -> (xs : SnocList a) -> (init : r) -> foldr f init xs = foldr f init (toList xs)
+    snocFoldrAsListFoldr f Lin = \_ => Refl
+    snocFoldrAsListFoldr f (xs :< x) = \init =>
+                                       rewrite snocFoldrAsListFoldr f xs (f x init)
+                                    in rewrite chipsAsListAppend xs [x]
+                                    in foldrListAppendDistributive f init (xs <>> []) [x]
+    in snocFoldrAsListFoldr f sn z
+
+export
+implementation FoldableV LazyList where
+  toListNeutralL f z xs = let
+      foldlEmptyIndependent : (f : r -> a -> r) -> (xs : LazyList a) -> (z : r) -> foldl f z xs = foldl f z (toList xs)
+      foldlEmptyIndependent f   []    = \_ => Refl
+      foldlEmptyIndependent f (y::ys) = \z => foldlEmptyIndependent f ys (f z y)
+    in foldlEmptyIndependent f xs z
+  toListNeutralR f z [] = Refl
+  toListNeutralR f z (x::xs) = cong (f x) (toListNeutralR f z xs)
 
