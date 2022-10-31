@@ -171,12 +171,24 @@ implementation AbelianGroup m => AbelianGroup (L a m) where
             in sym (runLSemigroupDistributive r l fo)
     in foldExtensionality (l <+> r) (r <+> l) prf
 
-export
-implementation Ring m => Ring (L a m) where
-  (<.>) = liftA2 (<.>)
-  ringOpIsAssociative = ?holeRingAssocL
-  ringOpIsDistributiveL = ?holeRingDistrLL
-  ringOpIsDistributiveR = ?holeRingDistrLR
+mutual
+  export
+  implementation Ring m => Ring (L a m) where
+    (<.>) = liftA2 (<.>)
+    ringOpIsAssociative = ?holeRingAssocL
+    ringOpIsDistributiveL = ?holeRingDistrLL
+    ringOpIsDistributiveR = ?holeRingDistrLR
+
+  public export
+  runLRingDistributive : (FoldableV t, Ring m) => (ll, lr : L a m) -> (fo : t a) -> runL (ll <.> lr) fo = runL ll fo <.> runL lr fo
+  runLRingDistributive (MkL {r=r1} d g u) (MkL {r=r2} e h v) fo = let
+      prf : (xs : List a) -> (u : r1) -> (v : r2) -> foldl (L.step g h) (u, v) xs = (foldl g u xs, foldl h v xs)
+      prf [] = \_, _ => Refl
+      prf (x::xs) = \u, v => prf xs (g u x) (h v x)
+   in rewrite toListNeutralL (step g h) (u, v) fo
+   in rewrite toListNeutralL g u fo
+   in rewrite toListNeutralL h v fo
+   in cong (finish (\n, m => d n <.> m) e) (prf (toList fo) u v)
 
 export
 implementation RingWithUnity m => RingWithUnity (L a m) where
@@ -447,12 +459,24 @@ implementation AbelianGroup m => AbelianGroup (R a m) where
             in sym (runRSemigroupDistributive r l fo)
     in foldExtensionality (l <+> r) (r <+> l) prf
 
-export
-implementation Ring m => Ring (R a m) where
-  (<.>) = liftA2 (<.>)
-  ringOpIsAssociative = ?holeRingAssocR
-  ringOpIsDistributiveL = ?holeRingDistrRL
-  ringOpIsDistributiveR = ?holeRingDistrRR
+mutual
+  export
+  implementation Ring m => Ring (R a m) where
+    (<.>) = liftA2 (<.>)
+    ringOpIsAssociative = ?holeRingAssocR
+    ringOpIsDistributiveL = ?holeRingDistrRL
+    ringOpIsDistributiveR = ?holeRingDistrRR
+
+  public export
+  runRRingDistributive : (FoldableV t, Ring m) => (rl, rr : R a m) -> (li : t a) -> runR (rl <.> rr) li = runR rl li <.> runR rr li
+  runRRingDistributive (MkR {r=r1} d g u) (MkR {r=r2} e h v) fo = let
+      prf : (xs : List a) -> foldr (R.step g h) (u, v) xs = (foldr g u xs, foldr h v xs)
+      prf [] = Refl
+      prf (x::xs) = cong (step g h x) (prf xs)
+   in rewrite toListNeutralR (step g h) (u, v) fo
+   in rewrite toListNeutralR g u fo
+   in rewrite toListNeutralR h v fo
+   in cong (Fold.finish (\n, m => d n <.> m) e) (prf (toList fo))
 
 export
 implementation RingWithUnity m => RingWithUnity (R a m) where
