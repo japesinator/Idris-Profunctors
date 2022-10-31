@@ -19,6 +19,21 @@ interface Fold f where
   ||| The requirement for a ``FoldableV`` instance stems from the necessity to destruct ``t``.
   foldExtensionality : Fold f => (fa, fb : f a b) -> (forall t. FoldableV t => (l : t a) -> run fa l = run fb l) -> fa = fb
 
+namespace Fold
+  public export
+  finish : (r1 -> a -> b) -> (r2 -> a) -> (r1, r2) -> b
+  finish f g (x, y) = f x (g y)
+
+  namespace L
+    public export
+    step : (r1 -> a -> r1) -> (r2 -> a -> r2) -> (r1, r2) -> a -> (r1, r2)
+    step u v (x, y) b = (u x b, v y b)
+
+  namespace R
+    public export
+    step : (a -> r1 -> r1) -> (a -> r2 -> r2) -> a -> (r1, r2) -> (r1, r2)
+    step u v b (x, y) = (u b x, v b y)
+
 ||| A leftwards fold
 public export
 data L a b = MkL (r -> b) (r -> a -> r) r
@@ -81,9 +96,7 @@ implementation Functor (L a) where
 export
 implementation Applicative (L a) where
   pure b = MkL (const b) (const $ const ()) ()
-  (MkL f u y) <*> (MkL a v z) = MkL (uncurry $ (. a) . f)
-                                    (\(x, y), b => (u x b, v y b))
-                                    (y, z)
+  (MkL f u y) <*> (MkL a v z) = MkL (Fold.finish f a) (Fold.L.step u v) (y, z)
 
 export
 implementation Monad (L a) where
@@ -302,9 +315,7 @@ implementation Functor (R a) where
 export
 implementation Applicative (R a) where
   pure b = MkR (const b) (const $ const ()) ()
-  (MkR f u y) <*> (MkR a v z) = MkR (uncurry $ (. a) . f)
-                                    (\b, (x, y) => (u b x, v b y))
-                                    (y, z)
+  (MkR f u y) <*> (MkR a v z) = MkR (Fold.finish f a) (Fold.R.step u v) (y, z)
 
 export
 implementation Monad (R a) where
