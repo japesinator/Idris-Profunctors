@@ -2,6 +2,7 @@ module Data.Verified.Foldable
 
 import Control.Applicative.Const
 import Data.List1
+import Data.SortedSet
 import Data.Validated
 import Data.Vect
 import Data.Vect.Properties.Foldr
@@ -71,4 +72,14 @@ implementation FoldableV (Vect n) where
     in rewrite vectHomomorphismCons x xs
     in rewrite sym (toListNeutralR f z xs)
     in vectHomomorphismF x xs
+
+namespace SortedSet
+  toListRedundant : (xs : List a) -> xs = foldr (::) [] xs
+  toListRedundant [] = Refl
+  toListRedundant (x::xs) = cong (x::) (toListRedundant xs)
+
+  export
+  implementation FoldableV SortedSet where
+    toListNeutralL f z xs = cong (foldl {t=List} f z) (toListRedundant (SortedSet.toList xs))
+    toListNeutralR f z xs = cong (foldr {t=List} f z) (toListRedundant (SortedSet.toList xs))
 
