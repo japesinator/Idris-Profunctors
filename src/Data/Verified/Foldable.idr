@@ -1,6 +1,7 @@
 module Data.Verified.Foldable
 
 import Control.Applicative.Const
+import Control.Monad.Maybe
 import Data.List.Alternating
 import Data.List.Lazy
 import Data.List1
@@ -26,6 +27,33 @@ implementation FoldableV Maybe where
   toListNeutralR f z Nothing  = Refl
   toListNeutralR f z (Just x) = Refl
 
+export
+implementation FoldableV m => FoldableV (MaybeT m) where
+  toListNeutralL f z m@(MkMaybeT mm) = let
+                                      funEq : (x : c) -> (g : c -> d) -> (f : c -> d) -> g = f -> g x = f x
+                                      funEq x g f hyp = rewrite hyp in Refl
+                                    in rewrite funEq
+                                               z
+                                             ( foldr (\x, xs => maybe (Delay xs) (Delay (\arg, x => xs (f x arg))) x) id mm )
+                                             ( foldr (\x, xs => maybe (Delay xs) (Delay (\arg, x => xs (f x arg))) x) id (toList mm))
+                                             $ toListNeutralR (\x, xs => maybe (Delay xs) (Delay (\arg, x => xs (f x arg))) x) id mm
+                                    in rewrite toListNeutralR (\x, xs => maybe (Delay xs) (Delay (\arg => arg :: xs)) x) Prelude.Nil mm
+                                    in prf (toList mm) z
+                                    where prf : (l : List (Maybe a)) -> (zz : r)
+                                             -> foldr (\x, xs => maybe (Delay xs) (Delay (\arg, x => xs (f x arg))) x) Prelude.Basics.id l zz
+                                             = foldl f zz (foldr (\x,xs => maybe (Delay xs) (Delay (\arg => arg :: xs)) x) Prelude.Nil l)
+                                          prf [] = \_ => Refl
+                                          prf (Nothing::xs) = \zz => prf xs zz
+                                          prf (Just x ::xs) = \zz => prf xs (f zz x)
+  toListNeutralR f z (MkMaybeT mm) = rewrite toListNeutralR (\x, xs => maybe (Delay xs) (Delay (\arg => f arg xs)) x) z mm
+                                  in rewrite toListNeutralR (\x, xs => maybe (Delay xs) (Delay (\arg => arg :: xs)) x) Prelude.Nil mm
+                                  in prf (toList mm)
+                                  where prf : (l : List (Maybe a))
+                                           -> foldr (\x, xs => maybe (Delay xs) (Delay (\arg => f arg xs)) x) z l
+                                            = foldr f z (foldr (\x,xs => maybe (Delay xs) (Delay (\arg => arg :: xs)) x) Prelude.Nil l)
+                                        prf [] = Refl
+                                        prf (Nothing::xs) = prf xs
+                                        prf ((Just x)::xs) = cong (f x) (prf xs)
 export
 implementation FoldableV (Either e) where
   toListNeutralL f z (Left x)  = Refl
