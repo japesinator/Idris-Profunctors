@@ -5,9 +5,34 @@ import Data.Profunctor
 import Data.Profunctor.Choice
 import Data.Profunctor.Prism
 import Data.SortedSet
+import Data.Verified.Foldable
 
 liftA2 : Applicative f => (a -> b -> c) -> f a -> f b -> f c
 liftA2 f x y = f <$> x <*> y
+
+public export
+interface Fold f where
+  run : Foldable t => f a b -> t a -> b
+
+  ||| Two folds are equal if they are point wise equal in their ``run`` function.
+  ||| We need this axiom because otherwise the Applicative instance would be unlawful.
+  ||| The requirement for a ``FoldableV`` instance stems from the necessity to destruct ``t``.
+  foldExtensionality : Fold f => (fa, fb : f a b) -> (forall t. FoldableV t => (l : t a) -> run fa l = run fb l) -> fa = fb
+
+namespace Fold
+  public export
+  finish : (r1 -> a -> b) -> (r2 -> a) -> (r1, r2) -> b
+  finish f g (x, y) = f x (g y)
+
+  namespace L
+    public export
+    step : (r1 -> a -> r1) -> (r2 -> a -> r2) -> (r1, r2) -> a -> (r1, r2)
+    step u v (x, y) b = (u x b, v y b)
+
+  namespace R
+    public export
+    step : (a -> r1 -> r1) -> (a -> r2 -> r2) -> a -> (r1, r2) -> (r1, r2)
+    step u v b (x, y) = (u b x, v b y)
 
 ||| A leftwards fold
 public export
@@ -29,6 +54,11 @@ export
 scanL : L a b -> List a -> List b
 scanL (MkL k _ z) []      = pure $ k z
 scanL (MkL k h z) (x::xs) = k (h z x) :: scanL (MkL k h (h z x)) xs
+
+export
+implementation Fold L where
+  run = runL
+  foldExtensionality a b = believe_me
 
 export
 implementation Profunctor L where
@@ -66,9 +96,7 @@ implementation Functor (L a) where
 export
 implementation Applicative (L a) where
   pure b = MkL (const b) (const $ const ()) ()
-  (MkL f u y) <*> (MkL a v z) = MkL (uncurry $ (. a) . f)
-                                    (\(x, y), b => (u x b, v y b))
-                                    (y, z)
+  (MkL f u y) <*> (MkL a v z) = MkL (Fold.finish f a) (Fold.L.step u v) (y, z)
 
 export
 implementation Monad (L a) where
@@ -78,9 +106,28 @@ export
 implementation Semigroup m => Semigroup (L a m) where
   (<+>) = liftA2 (<+>)
 
+public export
+runLSemigroupDistributive : (FoldableV t, Semigroup m) => (ll, lr : L a m) -> (fo : t a) -> runL (ll <+> lr) fo = runL ll fo <+> runL lr fo
+runLSemigroupDistributive (MkL {r=r1} d g u) (MkL {r=r2} e h v) fo = let
+    prf : (xs : List a) -> (u : r1) -> (v : r2) -> foldl (L.step g h) (u, v) xs = (foldl g u xs, foldl h v xs)
+    prf []      = \_, _ => Refl
+    prf (x::xs) = \y, z => prf xs (g y x) (h z x)
+ in rewrite toListNeutralL g u fo
+ in rewrite toListNeutralL h v fo
+ in rewrite toListNeutralL (step g h) (u, v) fo
+ in cong (Fold.finish (\n, m => d n <+> m) e) (prf (toList fo) u v)
+
 export
-implementation SemigroupV m => SemigroupV (L a m) where
-  semigroupOpIsAssociative = ?holeSemigroupL
+implementation (SemigroupV m) => SemigroupV (L a m) where
+  semigroupOpIsAssociative l@(MkL {r=r1} d g u) c@(MkL {r=r2} e h v) r@(MkL {r=r3} f j w)
+    = let
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> (c <+> r)) fo = runL ((l <+> c) <+> r) fo
+      prf fo = rewrite runLSemigroupDistributive l (c <+> r) fo
+            in rewrite runLSemigroupDistributive c r fo
+            in rewrite semigroupOpIsAssociative (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+            in rewrite sym (runLSemigroupDistributive l c fo)
+            in sym (runLSemigroupDistributive (l <+> c) r fo)
+    in foldExtensionality (l <+> (c <+> r)) ((l <+> c) <+> r) prf
 
 export
 implementation Monoid m => Monoid (L a m) where
@@ -88,30 +135,101 @@ implementation Monoid m => Monoid (L a m) where
 
 export
 implementation MonoidV m => MonoidV (L a m) where
-  monoidNeutralIsNeutralL = ?holeMonoidLL
-  monoidNeutralIsNeutralR = ?holeMonoidLR
+  monoidNeutralIsNeutralL l@(MkL k h z) = let
+    neut : L a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> neut) fo = runL l fo
+    prf fo = rewrite runLSemigroupDistributive l neut fo
+          in monoidNeutralIsNeutralL (k (foldl h z fo))
+
+    in foldExtensionality (l <+> neut) l prf
+  monoidNeutralIsNeutralR l@(MkL k h z) = let
+    neut : L a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runL (neut <+> l) fo = runL l fo
+    prf fo = rewrite runLSemigroupDistributive neut l fo
+          in monoidNeutralIsNeutralR (k (foldl h z fo))
+    in foldExtensionality (neut <+> l) l prf
 
 export
 implementation Group m => Group (L a m) where
   inverse = map inverse
-  groupInverseIsInverseR = ?holeGroupL
+  groupInverseIsInverseR l@(MkL k h z) = let
+       neut : L a m
+       neut = neutral
+       prf : forall t. FoldableV t => (fo : t a) -> runL (inverse l <+> l) fo = runL neut fo
+       prf fo = rewrite runLSemigroupDistributive (inverse l) l fo
+             in groupInverseIsInverseR (k (foldl h z fo))
+    in foldExtensionality (inverse l <+> l) neut prf
 
 export
 implementation AbelianGroup m => AbelianGroup (L a m) where
-  groupOpIsCommutative = ?abelianGroupHoleL
+  groupOpIsCommutative l@(MkL d g u) r@(MkL f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <+> r) fo = runL (r <+> l) fo
+      prf fo = rewrite runLSemigroupDistributive l r fo
+            in rewrite groupOpIsCommutative (d (foldl g u fo)) (f (foldl j w fo))
+            in sym (runLSemigroupDistributive r l fo)
+    in foldExtensionality (l <+> r) (r <+> l) prf
 
-export
-implementation Ring m => Ring (L a m) where
-  (<.>) = liftA2 (<.>)
-  ringOpIsAssociative = ?holeRingAssocL
-  ringOpIsDistributiveL = ?holeRingDistrLL
-  ringOpIsDistributiveR = ?holeRingDistrLR
+mutual
+  export
+  implementation Ring m => Ring (L a m) where
+    (<.>) = liftA2 (<.>)
+    ringOpIsAssociative l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> (c <.> r)) fo = runL ((l <.> c) <.> r) fo
+         prf fo = rewrite runLRingDistributive l (c <.> r) fo
+               in rewrite runLRingDistributive c r fo
+               in rewrite ringOpIsAssociative (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l c fo)
+               in sym (runLRingDistributive (l <.> c) r fo)
+      in foldExtensionality (l <.> (c <.> r)) ((l <.> c) <.> r) prf
+    ringOpIsDistributiveL l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> (c <+> r)) fo = runL ((l <.> c) <+> (l <.> r)) fo
+         prf fo = rewrite runLRingDistributive l (c <+> r) fo
+               in rewrite runLSemigroupDistributive c r fo
+               in rewrite ringOpIsDistributiveL (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l c fo)
+               in rewrite sym (runLRingDistributive l r fo)
+               in sym (runLSemigroupDistributive (l <.> c) (l <.> r) fo)
+      in foldExtensionality (l <.> (c <+> r)) ((l <.> c) <+> (l <.> r)) prf
+    ringOpIsDistributiveR l@(MkL d g u) c@(MkL e h v) r@(MkL f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runL ((l <+> c) <.> r) fo = runL ((l <.> r) <+> (c <.> r)) fo
+         prf fo = rewrite runLRingDistributive (l <+> c) r fo
+               in rewrite runLSemigroupDistributive l c fo
+               in rewrite ringOpIsDistributiveR (d (foldl g u fo)) (e (foldl h v fo)) (f (foldl j w fo))
+               in rewrite sym (runLRingDistributive l r fo)
+               in rewrite sym (runLRingDistributive c r fo)
+               in sym (runLSemigroupDistributive (l <.> r) (c <.> r) fo)
+      in foldExtensionality ((l <+> c) <.> r) ((l <.> r) <+> (c <.> r)) prf
+
+  public export
+  runLRingDistributive : (FoldableV t, Ring m) => (ll, lr : L a m) -> (fo : t a) -> runL (ll <.> lr) fo = runL ll fo <.> runL lr fo
+  runLRingDistributive (MkL {r=r1} d g u) (MkL {r=r2} e h v) fo = let
+      prf : (xs : List a) -> (u : r1) -> (v : r2) -> foldl (L.step g h) (u, v) xs = (foldl g u xs, foldl h v xs)
+      prf [] = \_, _ => Refl
+      prf (x::xs) = \u, v => prf xs (g u x) (h v x)
+   in rewrite toListNeutralL (step g h) (u, v) fo
+   in rewrite toListNeutralL g u fo
+   in rewrite toListNeutralL h v fo
+   in cong (finish (\n, m => d n <.> m) e) (prf (toList fo) u v)
 
 export
 implementation RingWithUnity m => RingWithUnity (L a m) where
   unity = pure unity
-  unityIsRingIdL = ?holeRingUnityLL
-  unityIsRingIdR = ?holeRingUnityLR
+  unityIsRingIdL l@(MkL d g u) = let
+      uni : L a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runL (l <.> uni) fo = runL l fo
+      prf fo = rewrite runLRingDistributive l uni fo
+            in unityIsRingIdL (d (foldl g u fo))
+    in foldExtensionality (l <.> uni) l prf
+  unityIsRingIdR l@(MkL d g u) = let
+      uni : L a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runL (uni <.> l) fo = runL l fo
+      prf fo = rewrite runLRingDistributive uni l fo
+            in unityIsRingIdR (d (foldl g u fo))
+    in foldExtensionality (uni <.> l) l prf
 
 -- The `Field` implementation won't type check, but it should exist
 
@@ -247,6 +365,11 @@ scanR (MkR {r} k h z) = map k . scan' where
   scan' (x::xs) = let l = scan' xs in h x (case l of [] => z; (q::_) => q) :: l
 
 export
+implementation Fold R where
+  run = runR
+  foldExtensionality a b = believe_me
+
+export
 implementation Profunctor R where
   dimap f g (MkR k h z) = MkR (g . k) (h . f) z
   rmap    g (MkR k h z) = MkR (g . k) h       z
@@ -282,9 +405,7 @@ implementation Functor (R a) where
 export
 implementation Applicative (R a) where
   pure b = MkR (const b) (const $ const ()) ()
-  (MkR f u y) <*> (MkR a v z) = MkR (uncurry $ (. a) . f)
-                                    (\b, (x, y) => (u b x, v b y))
-                                    (y, z)
+  (MkR f u y) <*> (MkR a v z) = MkR (Fold.finish f a) (Fold.R.step u v) (y, z)
 
 export
 implementation Monad (R a) where
@@ -294,9 +415,27 @@ export
 implementation Semigroup m => Semigroup (R a m) where
   (<+>) = liftA2 (<+>)
 
+public export
+runRSemigroupDistributive : (FoldableV t, Semigroup m) => (rl, rr : R a m) -> (li : t a) -> runR (rl <+> rr) li = runR rl li <+> runR rr li
+runRSemigroupDistributive (MkR {r=r1} d g u) (MkR {r=r2} e h v) fo = let
+    prf : (xs : List a) -> foldr (R.step g h) (u, v) xs = (foldr g u xs, foldr h v xs)
+    prf [] = Refl
+    prf (x::xs) = cong (step g h x) (prf xs)
+ in rewrite toListNeutralR g u fo
+ in rewrite toListNeutralR h v fo
+ in rewrite toListNeutralR (step g h) (u, v) fo
+ in cong (Fold.finish (\n, m => d n <+> m) e) (prf (toList fo))
+
 export
 implementation SemigroupV m => SemigroupV (R a m) where
-  semigroupOpIsAssociative = ?holeSemigroupR
+  semigroupOpIsAssociative l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runR (l <+> (c <+> r)) fo = runR ((l <+> c) <+> r) fo
+      prf fo = rewrite runRSemigroupDistributive l (c <+> r) fo
+            in rewrite runRSemigroupDistributive c r fo
+            in rewrite semigroupOpIsAssociative (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+            in rewrite sym (runRSemigroupDistributive l c fo)
+            in sym (runRSemigroupDistributive (l <+> c) r fo)
+      in foldExtensionality (l <+> (c <+> r)) ((l <+> c) <+> r) prf
 
 export
 implementation Monoid m => Monoid (R a m) where
@@ -304,8 +443,21 @@ implementation Monoid m => Monoid (R a m) where
 
 export
 implementation MonoidV m => MonoidV (R a m) where
-  monoidNeutralIsNeutralL = ?holeMonoidRL
-  monoidNeutralIsNeutralR = ?holeMonoidRR
+  monoidNeutralIsNeutralL r@(MkR k h z) = let
+    neut : R a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runR (r <+> neut) fo = runR r fo
+    prf fo = rewrite runRSemigroupDistributive r neut fo
+            in monoidNeutralIsNeutralL (k (foldr h z fo))
+    in foldExtensionality (r <+> neut) r prf
+
+  monoidNeutralIsNeutralR r@(MkR k h z) = let
+    neut : R a m
+    neut = neutral
+    prf : forall t. FoldableV t => (fo : t a) -> runR (neut <+> r) fo = runR r fo
+    prf fo = rewrite runRSemigroupDistributive neut r fo
+            in monoidNeutralIsNeutralR (k (foldr h z fo))
+    in foldExtensionality (neut <+> r) r prf
 
 export
 implementation Num n => Num (R a n) where
@@ -325,24 +477,83 @@ implementation Abs n => Abs (R a n) where
 export
 implementation Group m => Group (R a m) where
   inverse = map inverse
-  groupInverseIsInverseR = ?holeGroupR
+  groupInverseIsInverseR r@(MkR k h z) = let
+       neut : R a m
+       neut = neutral
+       prf : forall t. FoldableV t => (fo : t a) -> runR (inverse r <+> r) fo = runR neut fo
+       prf fo = rewrite runRSemigroupDistributive (inverse r) r fo
+             in groupInverseIsInverseR (k (foldr h z fo))
+    in foldExtensionality (inverse r <+> r) neut prf
 
 export
 implementation AbelianGroup m => AbelianGroup (R a m) where
-  groupOpIsCommutative = ?holeAbelianCommR
+  groupOpIsCommutative l@(MkR d g u) r@(MkR f j w) = let
+      prf : forall t. FoldableV t => (fo : t a) -> runR (l <+> r) fo = runR (r <+> l) fo
+      prf fo = rewrite runRSemigroupDistributive l r fo
+            in rewrite groupOpIsCommutative (d (foldr g u fo)) (f (foldr j w fo))
+            in sym (runRSemigroupDistributive r l fo)
+    in foldExtensionality (l <+> r) (r <+> l) prf
 
-export
-implementation Ring m => Ring (R a m) where
-  (<.>) = liftA2 (<.>)
-  ringOpIsAssociative = ?holeRingAssocR
-  ringOpIsDistributiveL = ?holeRingDistrRL
-  ringOpIsDistributiveR = ?holeRingDistrRR
+mutual
+  export
+  implementation Ring m => Ring (R a m) where
+    (<.>) = liftA2 (<.>)
+    ringOpIsAssociative l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR (l <.> (c <.> r)) fo = runR ((l <.> c) <.> r) fo
+         prf fo = rewrite runRRingDistributive l (c <.> r) fo
+               in rewrite runRRingDistributive c r fo
+               in rewrite ringOpIsAssociative (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l c fo)
+               in sym (runRRingDistributive (l <.> c) r fo)
+      in foldExtensionality (l <.> (c <.> r)) ((l <.> c) <.> r) prf
+    ringOpIsDistributiveL l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR (l <.> (c <+> r)) fo = runR ((l <.> c) <+> (l <.> r)) fo
+         prf fo = rewrite runRRingDistributive l (c <+> r) fo
+               in rewrite runRSemigroupDistributive c r fo
+               in rewrite ringOpIsDistributiveL (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l c fo)
+               in rewrite sym (runRRingDistributive l r fo)
+               in sym (runRSemigroupDistributive (l <.> c) (l <.> r) fo)
+      in foldExtensionality (l <.> (c <+> r)) ((l <.> c) <+> (l <.> r)) prf
+
+    ringOpIsDistributiveR l@(MkR d g u) c@(MkR e h v) r@(MkR f j w) = let
+         prf : forall t. FoldableV t => (fo : t a) -> runR ((l <+> c) <.> r) fo = runR ((l <.> r) <+> (c <.> r)) fo
+         prf fo = rewrite runRRingDistributive (l <+> c) r fo
+               in rewrite runRSemigroupDistributive l c fo
+               in rewrite ringOpIsDistributiveR (d (foldr g u fo)) (e (foldr h v fo)) (f (foldr j w fo))
+               in rewrite sym (runRRingDistributive l r fo)
+               in rewrite sym (runRRingDistributive c r fo)
+               in sym (runRSemigroupDistributive (l <.> r) (c <.> r) fo)
+      in foldExtensionality ((l <+> c) <.> r) ((l <.> r) <+> (c <.> r)) prf
+
+  public export
+  runRRingDistributive : (FoldableV t, Ring m) => (rl, rr : R a m) -> (li : t a) -> runR (rl <.> rr) li = runR rl li <.> runR rr li
+  runRRingDistributive (MkR {r=r1} d g u) (MkR {r=r2} e h v) fo = let
+      prf : (xs : List a) -> foldr (R.step g h) (u, v) xs = (foldr g u xs, foldr h v xs)
+      prf [] = Refl
+      prf (x::xs) = cong (step g h x) (prf xs)
+   in rewrite toListNeutralR (step g h) (u, v) fo
+   in rewrite toListNeutralR g u fo
+   in rewrite toListNeutralR h v fo
+   in cong (Fold.finish (\n, m => d n <.> m) e) (prf (toList fo))
 
 export
 implementation RingWithUnity m => RingWithUnity (R a m) where
   unity = pure unity
-  unityIsRingIdL = ?holeRingUnityRL
-  unityIsRingIdR = ?holeRingUnityRR
+  unityIsRingIdL r@(MkR d g u) = let
+      uni : R a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runR (r <.> uni) fo = runR r fo
+      prf fo = rewrite runRRingDistributive r uni fo
+            in unityIsRingIdL (d (foldr g u fo))
+    in foldExtensionality (r <.> uni) r prf
+  unityIsRingIdR r@(MkR d g u) = let
+      uni : R a m
+      uni = unity
+      prf : forall t. FoldableV t => (fo : t a) -> runR (uni <.> r) fo = runR r fo
+      prf fo = rewrite runRRingDistributive uni r fo
+            in unityIsRingIdR (d (foldr g u fo))
+    in foldExtensionality (uni <.> r) r prf
 
 ||| Convert an `L` to an `R`
 export
