@@ -1,17 +1,33 @@
 package profunctors
 
-sourcedir = src
+sourcedir = "src"
 
 modules = Data.Profunctor
         , Data.Profunctor.Cayley
+        , Data.Profunctor.Choice
         , Data.Profunctor.Closed
         , Data.Profunctor.Codensity
         , Data.Profunctor.Composition
+        , Data.Profunctor.Comonad
         , Data.Profunctor.Fold
+        , Data.Profunctor.Grate
         , Data.Profunctor.Iso
         , Data.Profunctor.Lens
+        , Data.Profunctor.Lens.At
+        , Data.Profunctor.Monad
         , Data.Profunctor.Prism
+        , Data.Profunctor.Ran
+        , Data.Profunctor.Rep
+        , Data.Profunctor.Sieve
+        , Data.Profunctor.Strong
         , Data.Profunctor.Trace
+        , Data.Profunctor.Traversal
+        , Data.Profunctor.Traversal.Index
+        , Data.Profunctor.Unsafe
+        , Data.Profunctor.Wander
+        , Data.Proxy
         , Data.Verified.Profunctor
 
-opts = "-p contrib"
+depends = comonad
+
+opts = "-p contrib comonad"

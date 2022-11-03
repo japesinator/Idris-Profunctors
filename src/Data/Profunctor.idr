@@ -1,14 +1,18 @@
 module Data.Profunctor
 
+import Control.Monad.Identity
 import Control.Arrow
 import Control.Category
+import Control.Comonad
+import Data.Either
 import Data.Morphisms
 
-%access public export
+%default total
 
 ||| Profunctors
 ||| @p The action of the Profunctor on pairs of objects
-interface Profunctor (p : Type -> Type -> Type) where
+public export
+interface Profunctor (0 p : Type -> Type -> Type) where
   ||| Map over both arguments
   |||
   ||| ````idris example
@@ -36,47 +40,33 @@ interface Profunctor (p : Type -> Type -> Type) where
   rmap : (a -> b) -> p c a -> p c b
   rmap = dimap id
 
+export
 implementation Monad m => Profunctor (Kleislimorphism m) where
-  dimap f g (Kleisli h) = Kleisli $ liftA g . h . f
+  dimap f g (Kleisli h) = Kleisli $ map g . h . f
 
-||| An injective (->)
-|||
-||| ````idris example
-||| believe_me : Arr a b
-||| ````
-|||
-record Arr a b where
-  constructor MkArr
-  runArr : (a -> b)
-
-implementation Category Arr where
-  id  = assert_total id
-  (.) = assert_total (.)
-
-implementation Arrow Arr where
-  arrow                   = MkArr
-  first                   = MkArr . (\f,(a,b) => (f a,b)) . runArr
-  second                  = MkArr . (\f,(a,b) => (a,f b)) . runArr
-  (MkArr f) *** (MkArr g) = MkArr $ \(a,b) => (f a, g b)
-  (MkArr f) &&& (MkArr g) = MkArr $ \a => (f a, g a)
-
-implementation Profunctor Arr where
-  dimap f g (MkArr h) = MkArr $ g . h . f
-
-implementation Functor (Arr a) where
-  map = rmap
+export
+implementation Profunctor Morphism where
+  dimap f g (Mor h) = Mor $ g . h . f
 
 ||| A method of attaching a phantom type as a "tag"
+public export
 record Tagged a b where
   constructor Tag
   runTagged : b
 
+export
 implementation Profunctor Tagged where
   lmap   = const $ Tag . runTagged
   rmap f = Tag . f . runTagged
 
+export
 implementation Functor (Tagged a) where
   map = rmap
+
+export
+implementation Comonad (Tagged a) where
+  duplicate = Tag
+  extract = runTagged
 
 -- UpStar
 -- {{{
@@ -87,20 +77,30 @@ implementation Functor (Tagged a) where
 ||| UpStar $ \x => Just $ isDigit x
 ||| ````
 |||
+public export
 record UpStarred (f : Type -> Type) d c where
   constructor UpStar
   runUpStar : d -> f c
 
+export
 implementation Functor f => Profunctor (UpStarred f) where
-  dimap ab cd (UpStar bfc) = UpStar $ map cd . bfc . ab
+  dimap ab cd (UpStar bfc) = UpStar $ \a => map cd $ bfc $ ab a
 
+export
 implementation Functor f => Functor (UpStarred f a) where
   map = rmap
 
+export
 implementation Applicative f => Applicative (UpStarred f a) where
   pure                        = UpStar . const . pure
   (UpStar ff) <*> (UpStar fx) = UpStar $ \a => ff a <*> fx a
 
+export
+implementation Alternative f => Alternative (UpStarred f a) where
+  empty = UpStar $ const empty
+  (UpStar fa) <|> (UpStar fb) = UpStar $ \x => (fa x) <|> (fb x)
+
+export
 implementation Monad f => Monad (UpStarred f a) where
   (UpStar m) >>= f = UpStar $ \e => m e >>= flip runUpStar e . f
 
@@ -114,20 +114,25 @@ implementation Monad f => Monad (UpStarred f a) where
 ||| DownStar $ show
 ||| ````
 |||
+public export
 record DownStarred (f : Type -> Type) d c where
   constructor DownStar
   runDownStar : f d -> c
 
+export
 implementation Functor f => Profunctor (DownStarred f) where
   dimap ab cd (DownStar fbc) = DownStar $ cd . fbc . map ab
 
+export
 implementation Functor (DownStarred f a) where
   map = (DownStar .) . (. runDownStar) . (.)
 
+export
 implementation Applicative (DownStarred f a) where
   pure                            = DownStar . const
   (DownStar ff) <*> (DownStar fx) = DownStar $ \a => ff a $ fx a
 
+export
 implementation Monad (DownStarred f a) where
   (DownStar m) >>= f = DownStar $ \x => runDownStar (f $ m x) x
 
@@ -141,14 +146,17 @@ implementation Monad (DownStarred f a) where
 ||| WrapArrow $ arrow ((+) 1)
 ||| ````
 |||
+public export
 record WrappedArrow (p : Type -> Type -> Type) a b where
   constructor WrapArrow
   unwrapArrow : p a b
 
+export
 implementation Category p => Category (WrappedArrow p) where
   (WrapArrow f) . (WrapArrow g) = WrapArrow $ f . g
   id                            = WrapArrow id
 
+export
 implementation Arrow p => Arrow (WrappedArrow p) where
   arrow                           = WrapArrow . arrow
   first                           = WrapArrow . first  . unwrapArrow
@@ -156,9 +164,10 @@ implementation Arrow p => Arrow (WrappedArrow p) where
   (WrapArrow a) *** (WrapArrow b) = WrapArrow $ a *** b
   (WrapArrow a) &&& (WrapArrow b) = WrapArrow $ a &&& b
 
+export
 implementation Arrow p => Profunctor (WrappedArrow p) where
   lmap = (>>>) . arrow
-  rmap = (.)   . arrow
+  rmap f = (arrow f .)
 
 -- }}}
 -- Forget
@@ -170,110 +179,33 @@ implementation Arrow p => Profunctor (WrappedArrow p) where
 ||| Forget ((+) 1)
 ||| ````
 |||
-record Forgotten r a b where
+public export
+record Forgotten (r : Type) (a : Type) (b : Type) where
   constructor Forget
   runForget : a -> r
 
+export
 implementation Profunctor (Forgotten r) where
   dimap f _ (Forget k) = Forget $ k . f
 
+export
 implementation Functor (Forgotten r a) where
   map = const $ Forget . runForget
 
+export
 implementation Foldable (Forgotten r a) where
   foldr = const const
 
+export
 implementation Traversable (Forgotten r a) where
   traverse = const $ pure . Forget . runForget
 
--- }}}
--- Strong
--- {{{
+public export
+record Zipping a b where
+  constructor MkZipping
+  runZipping : a -> a -> b
 
-||| Generalized UpStar of a Strong Functor
-interface Profunctor p => Strong (p : Type -> Type -> Type) where
-  ||| Create a new Profunctor of tuples with first element from the original
-  |||
-  ||| ````idris example
-  ||| first' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  first'  : p a b -> p (a, c) (b, c)
-  first'  = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . second'
-
-  ||| Create a new Profunctor of tuples with second element from the original
-  |||
-  ||| ````idris example
-  ||| second' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  second' : p a b -> p (c, a) (c, b)
-  second' = dimap (\x => (snd x, fst x)) (\x => (snd x, fst x)) . first'
-
-implementation Monad m => Strong (Kleislimorphism m) where
-  first'  (Kleisli f) = Kleisli $ \ac => f (fst ac) >>= \b => pure (b, snd ac)
-  second' (Kleisli f) = Kleisli $ \ca => f (snd ca) >>= pure . MkPair (fst ca)
-
-implementation Strong Arr where
-  first'  (MkArr f) = MkArr $ \(a,c) => (f a, c)
-  second' (MkArr f) = MkArr $ \(c,a) => (c, f a)
-
-implementation Functor m => Strong (UpStarred m) where
-  first'  (UpStar f) = UpStar $ \ac => map (\b' => (b', snd ac)) . f $ fst ac
-  second' (UpStar f) = UpStar $ \ca => map (MkPair $    fst ca)  . f $ snd ca
-
-implementation Arrow p => Strong (WrappedArrow p) where
-  first'  = WrapArrow . first  . unwrapArrow
-  second' = WrapArrow . second . unwrapArrow
-
-implementation Strong (Forgotten r) where
-  first'  (Forget k) = Forget $ k . fst
-  second' (Forget k) = Forget $ k . snd
-
--- }}}
--- Choice
--- {{{
-
-||| Generalized DownStar of a Costrong Functor
-interface Profunctor p => Choice (p : Type -> Type -> Type) where
-  ||| Like first' but with sum rather than product types
-  |||
-  ||| ````idris example
-  ||| left' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  left' : p a b -> p (Either a c) (Either b c)
-  left' = dimap mirror mirror . right'
-
-  ||| Like second' but with sum rather than product types
-  |||
-  ||| ````idris example
-  ||| right' (Kleisli $ \x => Just $ reverse x)
-  ||| ````
-  |||
-  right' : p a b -> p (Either c a) (Either c b)
-  right' = dimap mirror mirror . left'
-
-implementation Monad m => Choice (Kleislimorphism m) where
-  left'  f = Kleisli $ either (applyKleisli $ f        >>> arrow Left)
-                              (applyKleisli $ arrow id >>> arrow Right)
-  right' f = Kleisli $ either (applyKleisli $ arrow id >>> arrow Left)
-                              (applyKleisli $ f        >>> arrow Right)
-
-implementation Choice Arr where
-  left'  (MkArr f) = MkArr $ either (Left . f) Right
-  right' (MkArr f) = MkArr $ either Left (Right . f)
-
-implementation Choice Tagged where
-  left'  = Tag . Left  . runTagged
-  right' = Tag . Right . runTagged
-
-implementation Applicative f => Choice (UpStarred f) where
-  left'  (UpStar f) = UpStar $ either (map Left . f   ) (map Right . pure)
-  right' (UpStar f) = UpStar $ either (map Left . pure) (map Right . f   )
-
-implementation Monoid r => Choice (Forgotten r) where
-  left'  (Forget k) = Forget .      either k $ const neutral
-  right' (Forget k) = Forget . flip either k $ const neutral
-
+export
+implementation Profunctor Zipping where
+  dimap f g (MkZipping h) = MkZipping $ \a1, a2 => g $ h (f a1) (f a2)
 -- }}}

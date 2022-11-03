@@ -2,129 +2,201 @@ module Data.Profunctor.Lens
 
 import Data.Fin
 import Data.HVect
+import Data.Morphisms
 import Data.Profunctor
+import Data.Profunctor.Strong
 import Data.Profunctor.Iso
 import Data.Vect
 
-%access public export
 
 ||| A `Strong` `Profunctor` that can be used in a `Lens`
-interface Strong p => Lensing (p : Type -> Type -> Type) where
+public export
+interface Strong p => Lensing (0 p : Type -> Type -> Type) where
   strength : p a b -> p (b -> t, a) t
   strength = (rmap $ uncurry id) . second'
 
+export
 implementation Lensing (Forgotten r) where
   strength (Forget ar) = Forget $ ar . snd
 
+export
 implementation Functor f => Lensing (UpStarred f) where
   strength (UpStar f) = UpStar . uncurry $ (. f) . (<$>)
 
-implementation Lensing Arr where
-  strength = MkArr . uncurry . flip (.) . runArr
+export
+implementation Lensing Morphism where
+  strength = Mor . uncurry . flip (.) . applyMor
 
 ||| A Lens family, strictly speaking, or a polymorphic lens.
-Lens : Lensing p => Type -> Type -> Type -> Type -> Type
-Lens {p} = preIso {p}
+public export
+Lens : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Lens s t a b = Lensing p => preIso {p} s t a b
 
 ||| A Lens family that does not change types
-Lens' : Lensing p => Type -> Type -> Type
-Lens' {p} = Simple $ Lens {p}
+public export
+Lens' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Lens' s a = Simple (Lens {p}) s a
 
 ||| Build a `Lens` out of a function. Note this takes one argument, not two
-lens : Lensing p => (s -> (b -> t, a)) -> Lens {p} s t a b
-lens f = lmap f . strength
+export
+lens' : (s -> (b -> t, a)) -> Lens {p} s t a b
+lens' f = lmap f . strength
+
+||| Build a `Lens` out of getter and setter
+export
+lens : (s -> a) -> (s -> b -> t) -> Lens {p} s t a b
+lens gt st = lens' $ \s => (\b => st s b, gt s)
+
+export
+foldMapOf : Lens {p=Forgotten r} s t a b -> (a -> r) -> s -> r
+foldMapOf l f = runForget $ l $ Forget f
+
+export
+foldrOf : Lens {p=Forgotten (Endomorphism r)} s t a b -> (a -> r -> r) -> r -> s -> r
+foldrOf p f = flip $ applyEndo . foldMapOf p (Endo . f)
+
+public export
+Getter : Type -> Type -> Type -> Type -> Type
+Getter s t a = Lens {p=Forgotten a} s t a
 
 ||| Build a function to look at stuff from a Lens
-view : Lens {p=Forgotten a} s _ a _ -> s -> a
-view = runForget . (\f => f $ Forget id)
+export
+view : Getter s t a b -> s -> a
+view = runForget . go
+  where go : (Lensing (Forgotten a) =>
+             Forgotten a a b -> Forgotten a s t) -> Forgotten a s t
+        go f = f $ Forget id
+
+||| Create a getter from arbitrary function `s -> a`.
+export
+getter : (s -> a) -> Getter s t a b
+getter k (Forget aa) = Forget $ aa . k
+
+||| Combine two getters.
+export
+takeBoth : Getter s t a b -> Getter s t c d -> Getter s t (a, c) (b, d)
+takeBoth l r = getter $ \s =>  (view l s, view r s)
 
 infixl 8 ^.
 ||| Infix synonym for `view`
-(^.) : Lens {p=Forgotten a} s _ a _ -> s -> a
-(^.) = view
+export
+(^.) : s -> Getter s t a b -> a
+(^.) = flip view
+
+infixl 8 ^?
+export
+(^?) : s -> Lens {p=Forgotten $ Maybe a} s t a b -> Maybe a
+s ^? l = foldMapOf l Just s
 
 ||| Build a function to `map` from a Lens
-over : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
-over = (runArr .) . (. MkArr)
+export
+over : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
+over = (applyMor .) . go
+  where go : (Lensing Morphism => Morphism a b -> Morphism s t) -> (a -> b) -> Morphism s t
+        go = (. Mor)
 
 infixr 4 &~
 ||| Infix synonym for `over`
-(&~) : Lens {p=Arr} s t a b -> (a -> b) -> s -> t
+export
+(&~) : Lens {p=Morphism} s t a b -> (a -> b) -> s -> t
 (&~) = over
 
+export
+sets : ((a -> b) -> s -> t) -> Lens {p=Morphism} s t a b
+sets l (Mor f) = Mor $ l f
+
 ||| Set something to a specific value with a Lens
-set : Lens {p=Arr} s t _ b -> b -> s -> t
+export
+set : Lens {p=Morphism} s t a b -> b -> s -> t
 set = (. const) . over
 
 infixr 4 .~
 ||| Infix synonym for `set`
-(.~) : Lens {p=Arr} s t _ b -> b -> s -> t
+export
+(.~) : Lens {p=Morphism} s t a b -> b -> s -> t
 (.~) = set
+
+export
+mapped : Functor f => Lens {p=Morphism} (f a) (f b) a b
+mapped = sets map
 
 infixr 4 +~
 ||| Increment the target of a lens by a number
-(+~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+export
+(+~) : Num a => Lens {p=Morphism} s t a a -> a -> s -> t
 (+~) = (. (+)) . over
 
 infixr 4 -~
 ||| Decrement the target of a lens by a number
-(-~) : Neg a => Lens {p=Arr} s t a a -> a -> s -> t
+export
+(-~) : Neg a => Lens {p=Morphism} s t a a -> a -> s -> t
 (-~) = (. (-)) . over
 
 infixr 4 *~
 ||| Multiply the target of a lens by a number
-(*~) : Num a => Lens {p=Arr} s t a a -> a -> s -> t
+export
+(*~) : Num a => Lens {p=Morphism} s t a a -> a -> s -> t
 (*~) = (. (*)) . over
 
 infixr 4 /~
 ||| Divide the target of a lens by a number
-(/~) : Lens {p=Arr} s t Double Double -> Double -> s -> t
+export
+(/~) : Fractional a => Lens {p=Morphism} s t a a -> a -> s -> t
 (/~) = (. (/)) . over
 
 infixr 4 <+>~
 ||| Associatively combine the target of a Lens with another value
-(<+>~) : Semigroup a => Lens {p=Arr} s t a a -> a -> s -> t
+export
+(<+>~) : Semigroup a => Lens {p=Morphism} s t a a -> a -> s -> t
 (<+>~) = (. (<+>)) . over
 
 infixr 4 $>~
 ||| Rightwards sequence the target of a lens with an applicative
-($>~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+export
+($>~) : Applicative f => Lens {p=Morphism} s t (f a) (f a) -> f a -> s -> t
 ($>~) l = over l . (*>)
 
 infixr 4 <$~
 ||| Rightwards sequence the target of a lens with an applicative
-(<$~) : Applicative f => Lens {p=Arr} s t (f a) (f a) -> f a -> s -> t
+export
+(<$~) : Applicative f => Lens {p=Morphism} s t (f a) (f a) -> f a -> s -> t
 (<$~) l = over l . (<*)
 
 ||| A Lens for the first element of a tuple
-_1 : Lensing p => Lens {p} (a, b) (x, b) a x
-_1 = lens $ \(a,b) => (flip MkPair b, a)
+export
+l_1 : Lens {p} (a, b) (x, b) a x
+l_1 = lens' $ \(a,b) => (flip MkPair b, a)
 
 ||| A Lens for the second element of a tuple
-_2 : Lensing p => Lens {p} (b, a) (b, x) a x
-_2 = lens $ \(b,a) => (MkPair b, a)
+export
+l_2 : Lens {p} (b, a) (b, x) a x
+l_2 = lens' $ \(b,a) => (MkPair b, a)
 
 ||| A Lens for the first element of a non-empty vector
-_vCons : Lensing p => Lens {p} (Vect (S n) a) (Vect (S n) b)
-                               (a, Vect n a) (b, Vect n b)
-_vCons = lens $ \(x::xs) => (uncurry (::), (x,xs))
+export
+l_vCons : Lens {p} (Vect (S n) a) (Vect (S n) b)
+                  (a, Vect n a)  (b, Vect n b)
+l_vCons = lens' $ \(x::xs) => (uncurry (::), (x,xs))
 
 ||| A Lens for the nth element of a big-enough vector
-_vNth : Lensing p => {m : Nat} -> (n : Fin (S m)) ->
+export
+l_vNth : {m : Nat} -> (n : Fin (S m)) ->
         Lens {p} (Vect (S m) a) (Vect (S m) b) (a, Vect m a) (b, Vect m b)
-_vNth n = lens $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
+l_vNth n = lens' $ \v => (uncurry $ insertAt n, (index n v, deleteAt n v))
 
 ||| A Lens for the nth element of a big-enough heterogenous vector
-_hVNth : Lensing p => (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
-                                              (index i us, HVect (deleteAt i us))
-                                              (index i vs, HVect (deleteAt i vs))
-_hVNth n = lens $ \v =>
+export
+l_hVNth : (i : Fin (S l)) -> Lens {p} (HVect us) (HVect vs)
+                                 (index i us, HVect (deleteAt i us))
+                                 (index i vs, HVect (deleteAt i vs))
+l_hVNth n = lens' $ \v =>
            (believe_me . uncurry (insertAt' n), (index n v, deleteAt n v)) where
-  insertAt' : (i : Fin (S l)) -> a -> HVect us -> HVect (insertAt i a us)
+  insertAt' : (i : Fin (S k)) -> a -> HVect ws -> HVect (insertAt i a ws)
   insertAt' FZ     y xs      = y :: xs
   insertAt' (FS k) y (x::xs) = x :: insertAt' k y xs
   insertAt' (FS k) y []      = absurd k
 
 ||| Everything has a `()` in it
-devoid : Lensing p => Lens' {p} a ()
-devoid = lens $ flip MkPair () . const
+export
+devoid : Lens' {p} a ()
+devoid = lens' $ flip MkPair () . const

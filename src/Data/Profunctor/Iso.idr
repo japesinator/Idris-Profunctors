@@ -1,13 +1,13 @@
 module Data.Profunctor.Iso
 
+import Data.Either
 import Data.Profunctor
 
-%access public export
+infixl 1 .&
 
-infixl 1 &
-
-(&) : a -> (a -> b) -> b
-a & f = f a
+export
+(.&) : a -> (a -> b) -> b
+a .& f = f a
 
 ||| A type-level function to make it easier to talk about "simple" `Lens`,
 ||| `Prism`, and `Iso`s
@@ -17,85 +17,110 @@ a & f = f a
 ||| fstStrLens = _1
 ||| ````
 |||
+public export
 Simple : (Type -> Type -> Type -> Type -> Type) -> Type -> Type -> Type
 Simple t s a = t s s a a
 
+public export
 preIso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
-preIso {p} s t a b = p a b -> p s t
+preIso s t a b = p a b -> p s t
 
 ||| An isomorphism family.
-Iso : Profunctor p => Type -> Type -> Type -> Type -> Type
-Iso {p} = preIso {p}
+public export
+Iso : {p : Type -> Type -> Type} -> Type -> Type -> Type -> Type -> Type
+Iso s t a b = Profunctor p => preIso {p} s t a b
 
 ||| An isomorphism family that does not change types
-Iso' : Profunctor p => Type -> Type -> Type
-Iso' {p} = Simple $ Iso {p}
+public export
+Iso' : {p : Type -> Type -> Type} -> Type -> Type -> Type
+Iso' s a = Simple (Iso {p}) s a
 
 ||| Turns a coavariant and contravariant function into an `Iso`
-iso : Profunctor p => (s -> a) -> (b -> t) -> Iso {p} s t a b
-iso = dimap
+export
+iso : (s -> a) -> (b -> t) -> Iso s t a b
+iso f g = dimap f g
 
 ||| Builds an `Iso` useful for constructing a `Lens`
-lensIso : Profunctor p =>
-          (s -> a) -> (s -> b -> t) -> Iso {p} s t (a, s) (b, s)
+export
+lensIso : (s -> a) -> (s -> b -> t) -> Iso s t (a, s) (b, s)
 lensIso gt = iso (\s => (gt s, s)) . uncurry . flip
 
 ||| Builds an `Iso` useful for constructing a `Prism`
-prismIso : Profunctor p => (b -> t) -> (s -> Either t a) ->
-                           Iso {p} s t (Either t a) (Either t b)
-prismIso = flip iso . either id . Delay
+export
+prismIso : (b -> t) -> (s -> Either t a) -> Iso s t (Either t a) (Either t b)
+prismIso f = flip iso $ either id $ Delay f
 
 ||| Convert an element of the first half of an iso to the second
+export
 forwards : Profunctor p => Iso {p=Forgotten a} s t a b -> s -> a
 forwards i = runForget . i $ Forget id
 
 ||| Convert an element of the second half of an iso to the first
+export
 backwards : Profunctor p => Iso {p=Tagged} s t a b -> b -> t
 backwards i = runTagged . i . Tag
 
 ||| An `Iso` between a function and it's arguments-flipped version
-flipped : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
-                                  (b -> a -> c) (e -> d -> f)
+export
+flipped : Iso (a -> b -> c) (d -> e -> f)
+              (b -> a -> c) (e -> d -> f)
 flipped = iso flip flip
 
 ||| An `Iso` between a function and it's curried version
-curried : Profunctor p => Iso {p} ((a, b) -> c) ((d, e) -> f)
-                                  (a -> b -> c) (d -> e -> f)
+export
+curried : Iso ((a, b) -> c) ((d, e) -> f)
+              (a -> b -> c) (d -> e -> f)
 curried = iso curry uncurry
 
 ||| An `Iso` between a function and it's uncurried version
-uncurried : Profunctor p => Iso {p} (a -> b -> c) (d -> e -> f)
-                                    ((a, b) -> c) ((d, e) -> f)
+export
+uncurried : Iso (a -> b -> c) (d -> e -> f)
+                ((a, b) -> c) ((d, e) -> f)
 uncurried = iso uncurry curry
 
 ||| An `Iso` between a list and its reverse
-reversed : Profunctor p => Iso {p} (List a) (List b) (List a) (List b)
+export
+reversed : Iso (List a) (List b) (List a) (List b)
 reversed = iso reverse reverse
 
 ||| An `Iso` between a string and a list of its characters
-packed : Profunctor p => Iso' {p} String (List Char)
+export
+packed : Iso' String (List Char)
 packed = iso unpack pack
 
 ||| An `Iso` between a list of characters and its string
-unpacked : Profunctor p => Iso' {p} (List Char) String
+export
+unpacked : Iso' (List Char) String
 unpacked = iso pack unpack
 
+snooze : a -> Lazy a
+snooze x = Delay x
+ring : Lazy b -> b
+ring x = Force x
+
 ||| An `Iso` between a lazy variable and its strict form
-motivated : Profunctor p => Iso {p} a b (Lazy a) (Lazy b)
-motivated = iso Delay Force
+export
+motivated : Iso a b (Lazy a) (Lazy b)
+motivated = iso snooze ring
 
 ||| An `Iso` between a strict variable and its lazy form
-unmotivated : Profunctor p => Iso {p} (Lazy a) (Lazy b) a b
-unmotivated = iso Force Delay
+export
+unmotivated : Iso (Lazy a) (Lazy b) a b
+unmotivated = iso ring snooze
 
-||| An `Iso` between an enumerable value and it's `Nat` representation
-enum : (Profunctor p, Enum a) => Iso' {p} Nat a
-enum = iso fromNat toNat
+-- TODO: Enum is currently commented out of base
+--
+-- ||| An `Iso` between an enumerable value and it's `Nat` representation
+-- export
+-- enum : (Profunctor p, Enum a) => Iso' {p} Nat a
+-- enum = iso fromNat toNat
+--
+-- ||| An `Iso` between a `Nat` and its enumerable representation
+-- export
+-- denum : (Profunctor p, Enum a) => Iso' {p} a Nat
+-- denum = iso toNat fromNat
 
-||| An `Iso` between a `Nat` and its enumerable representation
-denum : (Profunctor p, Enum a) => Iso' {p} a Nat
-denum = iso toNat fromNat
-
-mirrored : Profunctor p => Iso {p} (Either a b) (Either c d)
-                                   (Either b a) (Either d c)
+export
+mirrored : Iso (Either a b) (Either c d)
+               (Either b a) (Either d c)
 mirrored = iso mirror mirror
